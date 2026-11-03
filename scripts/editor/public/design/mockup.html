@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="vi" data-theme="dark" data-accent="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S6X Editor — Mockup Tahoe</title>
+<link rel="stylesheet" href="tahoe.css">
+<link rel="stylesheet" href="components.css">
+<style>
+  /* Chỉ dành riêng cho trang mockup (không thuộc design system) */
+  html,body{height:100%;margin:0}
+  body{overflow:hidden}
+  .page{position:relative;height:100%;padding:16px;background:var(--wall);overflow:hidden}
+  .ribbons{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .ribbons path{fill:none;stroke-linecap:round}
+  .rb1{stroke:light-dark(rgba(255,255,255,.60),rgba(120,180,255,.20))}
+  .rb2{stroke:light-dark(rgba(40,100,220,.35),rgba(60,130,255,.30))}
+  .rb3{stroke:light-dark(rgba(255,240,200,.55),rgba(140,190,255,.12))}
+  .t-window{position:relative;height:100%}
+  @media (max-height:830px){.t-body{--timeline-h:288px}}
+  /* khung hình giả */
+  .frame{position:absolute;inset:0;width:100%;height:100%}
+  .ov{position:absolute;font-family:var(--font-ui)}
+  /* vị trí lớp phủ theo tỉ lệ khung */
+  .ov-sub{left:8%;right:8%;top:76%;display:flex;justify-content:center}
+  #selBox{left:14%;top:73.5%;width:72%;height:15%}
+  .ov-lower{left:6%!important;top:auto!important;bottom:27%;width:38%!important}
+  #ghostCall{right:6%;top:9%}.ov-lower{bottom:35%!important}#ghostBox{right:5.2%;left:auto;top:7%;width:15%;height:11%}
+  [data-ar="4:5"] .ov-sub{top:72%;left:6%;right:6%}
+  [data-ar="4:5"] #selBox{left:8%;top:69%;width:84%;height:18%}
+  [data-ar="4:5"] .ov-lower{bottom:37%!important;width:62%!important}
+  [data-ar="4:5"] #ghostBox{width:26%;height:7%;top:7%}
+  .ov-sub span{background:rgba(12,12,12,.74);color:#EDEDED;font-weight:800;font-size:calc(var(--u)*5.6);line-height:1.25;padding:calc(var(--u)*1.6) calc(var(--u)*3.4);border-radius:calc(var(--u)*3);text-align:center;letter-spacing:-.01em}
+  .ov-sub b{color:#C5A059;font-weight:800}
+  .ov-lower{left:6%;top:50%;width:66%;display:flex;gap:calc(var(--u)*2.6);align-items:center;padding:calc(var(--u)*2.4) calc(var(--u)*3.6) calc(var(--u)*2.4) calc(var(--u)*2.6);border-radius:calc(var(--u)*3.4);background:rgba(255,255,255,.16);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 0 1px rgba(255,255,255,.12);color:#fff}
+  .ov-lower i{width:calc(var(--u)*.9);height:calc(var(--u)*8.4);border-radius:calc(var(--u)*1);background:#C5A059;flex:none}
+  .ov-lower strong{display:block;font-size:calc(var(--u)*4.2);font-weight:800;line-height:1.15}
+  .ov-lower small{display:block;font-size:calc(var(--u)*3);opacity:.82;line-height:1.3}
+  .ov-call{right:6%;top:22%;padding:calc(var(--u)*1.6) calc(var(--u)*3.4);border-radius:99px;background:#C5A059;color:#1C1507;font-weight:800;font-size:calc(var(--u)*4.2)}
+  .t-body{position:relative}
+  .glassbar{display:flex;align-items:center;gap:var(--s-2)}
+  .grow{flex:1;min-width:0}
+  .row{display:flex;align-items:center;gap:var(--s-2)}
+  .gal h4{margin:var(--s-4) 0 var(--s-2);font-size:var(--fs-11);letter-spacing:var(--ls-caps);text-transform:uppercase;color:var(--label-2);font-weight:600}
+  .gal .row{flex-wrap:wrap;gap:var(--s-3)}
+  .t-seg--tight>button{padding:0 6px;white-space:nowrap;flex:1 1 auto}
+  .scene-thumb{background:linear-gradient(150deg,#27456b,#10192a)}
+</style>
+</head>
+<body class="t-root">
+
+<!-- ===== Sprite icon: nét 1.5px, kiểu SF Symbols ===== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8.5 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.7 5.1a.8.8 0 0 0-1.2.7Z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6.5" y="5" width="3.8" height="14" rx="1.2" fill="currentColor" stroke="none"/><rect x="13.7" y="5" width="3.8" height="14" rx="1.2" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M6.5 6v12"/><path d="M18 7v10a.7.7 0 0 1-1.1.6L9.6 12.6a.7.7 0 0 1 0-1.2l7.3-5A.7.7 0 0 1 18 7Z" fill="currentColor"/></symbol>
+  <symbol id="i-fwd" viewBox="0 0 24 24"><path d="M17.5 6v12"/><path d="M6 7v10a.7.7 0 0 0 1.100.6l7.300-5a.7.7 0 0 0 0-1.200l-7.300-5A.7.7 0 0 0 6 7Z" fill="currentColor"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 7 4.5 11.500 9 16"/><path d="M5 11.500h8.500a5 5 0 0 1 0 10H11" transform="translate(0 -4)"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 24 24"><path d="m15 7 4.500 4.500L15 16"/><path d="M19 11.500h-8.500a5 5 0 0 0 0 10H13" transform="translate(0 -4)"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.500 4.500 4.500L19 7.500"/></symbol>
+  <symbol id="i-export" viewBox="0 0 24 24"><path d="M12 15V3.500M8 7.500l4-4 4 4"/><path d="M7 10.500H6a2 2 0 0 0-2 2V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5.500a2 2 0 0 0-2-2h-1"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 5.500A1.500 1.500 0 0 1 6.500 4H16l3 3v11.500A1.500 1.500 0 0 1 17.500 20h-11A1.500 1.500 0 0 1 5 18.500Z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.800"/><path d="M12 3.500v2M12 18.500v2M3.500 12h2M18.500 12h2M6 6l1.400 1.400M16.600 16.600 18 18M18 6l-1.400 1.400M7.400 16.600 6 18"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.500 14.500A7.500 7.500 0 0 1 9.500 4.500a8 8 0 1 0 10 10Z"/></symbol>
+  <symbol id="i-text" viewBox="0 0 24 24"><path d="M5.500 8V6h13v2M12 6v12.500M9.500 18.500h5"/></symbol>
+  <symbol id="i-bubble" viewBox="0 0 24 24"><path d="M5.500 5h13A1.500 1.500 0 0 1 20 6.500v8a1.500 1.500 0 0 1-1.500 1.500H13l-4 3.500V16H5.500A1.500 1.500 0 0 1 4 14.500v-8A1.500 1.500 0 0 1 5.500 5Z"/></symbol>
+  <symbol id="i-lower" viewBox="0 0 24 24"><rect x="3.500" y="12" width="17" height="7" rx="2"/><path d="M7 15.500h6M7 17.500h3.500"/><path d="M3.500 6.500h17" opacity=".4"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6.500" height="6.500" rx="1.800"/><rect x="13.500" y="4" width="6.500" height="6.500" rx="1.800"/><rect x="4" y="13.500" width="6.500" height="6.500" rx="1.800"/><rect x="13.500" y="13.500" width="6.500" height="6.500" rx="1.800"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9.500 6.500H20M9.500 12H20M9.500 17.500H20"/><circle cx="5" cy="6.500" r=".6" fill="currentColor"/><circle cx="5" cy="12" r=".6" fill="currentColor"/><circle cx="5" cy="17.500" r=".6" fill="currentColor"/></symbol>
+  <symbol id="i-wave" viewBox="0 0 24 24"><path d="M4 10v4M7.500 7v10M11 4.500v15M14.500 8v8M18 10.500v3M21 11.500v1" /></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M9 17.500V6l10-2v11.500"/><circle cx="6.500" cy="17.500" r="2.500"/><circle cx="16.500" cy="15.500" r="2.500"/></symbol>
+  <symbol id="i-film" viewBox="0 0 24 24"><rect x="3.500" y="5" width="17" height="14" rx="2.500"/><path d="M8 5v14M16 5v14M3.500 9.500H8M3.500 14.500H8M16 9.500h4.500M16 14.500h4.500"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 4c.6 3.800 2.200 5.400 6 6-3.800.6-5.400 2.200-6 6-.6-3.800-2.200-5.400-6-6 3.800-.6 5.400-2.200 6-6Z"/><path d="M18.500 15.500c.3 1.600 1 2.200 2.500 2.500-1.500.3-2.200.9-2.500 2.500-.3-1.600-1-2.200-2.500-2.500 1.500-.3 2.200-.9 2.500-2.500Z"/></symbol>
+  <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M4.500 9.500h3L12 5.500v13l-4.500-4h-3Z"/><path d="M15.500 9a4 4 0 0 1 0 6M18 6.500a7.500 7.500 0 0 1 0 11"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5.500" y="10.500" width="13" height="9.500" rx="2.500"/><path d="M8.500 10.500V8a3.500 3.500 0 0 1 7 0v2.500"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.500 12S6 5.500 12 5.500 21.500 12 21.500 12 18 18.500 12 18.500 2.500 12 2.500 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10 6a9 9 0 0 1 2-.5c6 0 9.500 6.500 9.500 6.500a17 17 0 0 1-3 3.800M6.500 7.500A17 17 0 0 0 2.500 12S6 18.500 12 18.500c1.500 0 2.800-.4 4-1"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-chevd" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-chevu" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.500" cy="10.500" r="6"/><path d="m15 15 5 5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6.500" cy="6.500" r="2.500"/><circle cx="6.500" cy="17.500" r="2.500"/><path d="M8.500 8 20 18M8.500 16 20 6"/></symbol>
+  <symbol id="i-safe" viewBox="0 0 24 24"><path d="M4 8V6.500A2.500 2.500 0 0 1 6.500 4H8M16 4h1.500A2.500 2.500 0 0 1 20 6.500V8M20 16v1.500a2.500 2.500 0 0 1-2.500 2.500H16M8 20H6.500A2.500 2.500 0 0 1 4 17.500V16"/><rect x="8" y="8.500" width="8" height="7" rx="1.500"/></symbol>
+  <symbol id="i-crop" viewBox="0 0 24 24"><path d="M7 3v12.500a1.500 1.500 0 0 0 1.500 1.500H21M3 7h12.500A1.500 1.500 0 0 1 17 8.500V21"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.700 0l3-3a4 4 0 0 0-5.700-5.700l-1 1"/><path d="M14 10a4 4 0 0 0-5.700 0l-3 3a4 4 0 0 0 5.700 5.700l1-1"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.500 6.500h15M9.500 6.500V5a1.500 1.500 0 0 1 1.500-1.500h2A1.500 1.500 0 0 1 14.500 5v1.500M6.500 6.500l.7 11.600A2 2 0 0 0 9.200 20h5.600a2 2 0 0 0 2-1.900l.7-11.600M10 10.500v6M14 10.500v6"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.500" y="8.500" width="11" height="11" rx="2.500"/><path d="M15.500 8.500V6.500A2.500 2.500 0 0 0 13 4H6.500A2.500 2.500 0 0 0 4 6.500V13a2.500 2.500 0 0 0 2.500 2.500h2"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M10.700 4.800 3.500 17.500A1.500 1.500 0 0 0 4.800 19.800h14.400a1.500 1.500 0 0 0 1.300-2.300L13.300 4.800a1.500 1.500 0 0 0-2.600 0Z"/><path d="M12 10v4M12 16.800v.2"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="3"/></symbol>
+  <symbol id="i-move" viewBox="0 0 24 24"><path d="M12 3.500v17M3.500 12h17M9 6.500 12 3.500l3 3M9 17.500l3 3 3-3M6.500 9 3.500 12l3 3M17.500 9l3 3-3 3"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.500"/><path d="M12 7.500V12l3 2"/></symbol>
+  <symbol id="i-motion" viewBox="0 0 24 24"><path d="M4 16c3 0 3-8 8-8s4 8 8 8"/><circle cx="4" cy="16" r="1" fill="currentColor"/><circle cx="20" cy="16" r="1" fill="currentColor"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 4 8.500 4.500L12 13 3.500 8.500Z"/><path d="m3.500 12.500 8.500 4.500 8.500-4.500M3.500 16.500l8.500 4.500 8.500-4.500" opacity=".6"/></symbol>
+  <symbol id="i-grid4" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16M8 4v16M16 4v16"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3.500" width="6" height="11" rx="3"/><path d="M5.500 11.500a6.500 6.500 0 0 0 13 0M12 18v2.500"/></symbol>
+  <symbol id="i-magnet" viewBox="0 0 24 24"><path d="M6.500 4v8a5.500 5.500 0 0 0 11 0V4M6.500 8h4M13.500 8h4"/></symbol><symbol id="i-magnet-old" viewBox="0 0 24 24"><path d="M5 12V6.500M12 12V6.500M5 12a3.500 3.500 0 0 0 7 0"/><path d="M5 6.500h2.500v3H5zM9.500 6.500H12v3H9.500z" transform="translate(0 0)"/><path d="M15 4v8a5 5 0 0 1-10 0" transform="translate(5 3) scale(.8)" opacity="0"/></symbol>
+  <symbol id="i-volume" viewBox="0 0 24 24"><path d="M3.500 9.500H7l4.500-4v13L7 14.500H3.500Z"/><path d="M15 9.500a3.500 3.500 0 0 1 0 5M17.500 7a7 7 0 0 1 0 10"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 0 0 16c1.200 0 1.800-.8 1.500-1.800-.4-1.200.2-2.200 1.500-2.200h2A3 3 0 0 0 20 12.800C20 8 16.500 4 12 4Z"/><circle cx="8" cy="11" r="1" fill="currentColor"/><circle cx="12" cy="8" r="1" fill="currentColor"/><circle cx="16" cy="11" r="1" fill="currentColor"/></symbol>
+</svg>
+
+<!-- Hình nền Tahoe: vẽ bằng CSS + SVG -->
+<div class="page">
+<svg class="ribbons" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <defs><filter id="bl"><feGaussianBlur stdDeviation="14"/></filter><filter id="bl2"><feGaussianBlur stdDeviation="5"/></filter></defs>
+  <path class="rb2" d="M-100 700C300 520 520 820 860 560S1300 160 1750 380" stroke-width="200" filter="url(#bl)"/>
+  <path class="rb1" d="M-100 560C250 380 560 700 900 440S1350 60 1750 260" stroke-width="46" filter="url(#bl2)"/>
+  <path class="rb3" d="M-100 820C320 640 600 900 960 660S1400 300 1750 520" stroke-width="90" filter="url(#bl)"/>
+</svg>
+
+<!-- ======================== CỬA SỔ ỨNG DỤNG ======================== -->
+<div class="t-window" id="win">
+
+  <!-- Thanh cửa sổ -->
+  <header class="t-titlebar">
+    <div class="t-lights" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="t-titlebar__title">
+      <span class="t-titlebar__app">S6X Editor</span>
+      <span class="t-titlebar__doc">Talking head · quy-tac-3-giay</span>
+    </div>
+    <div class="t-titlebar__actions">
+      <div class="t-toolbar" role="toolbar" aria-label="Chỉnh sửa">
+        <button class="t-btn t-btn--ghost t-btn--icon" data-tip="Hoàn tác  Ctrl+Z" data-tip-pos="bottom" aria-label="Hoàn tác"><svg class="t-ico"><use href="#i-undo"/></svg></button>
+        <button class="t-btn t-btn--ghost t-btn--icon" data-tip="Làm lại  Ctrl+Shift+Z" data-tip-pos="bottom" aria-label="Làm lại"><svg class="t-ico"><use href="#i-redo"/></svg></button>
+        <span class="t-vsep"></span>
+        <button class="t-btn t-btn--ghost t-btn--icon" data-tip="Thêm chữ tại playhead" data-tip-pos="bottom" aria-label="Thêm chữ"><svg class="t-ico"><use href="#i-text"/></svg></button>
+        <button class="t-btn t-btn--ghost t-btn--icon" data-tip="Thêm callout" data-tip-pos="bottom" aria-label="Thêm callout"><svg class="t-ico"><use href="#i-bubble"/></svg></button>
+        <button class="t-btn t-btn--ghost t-btn--icon" data-tip="Thêm lower third" data-tip-pos="bottom" aria-label="Thêm lower third"><svg class="t-ico"><use href="#i-lower"/></svg></button>
+        <span class="t-vsep"></span>
+        <button class="t-btn t-btn--ghost t-btn--icon" data-tip="Nhân bản  Ctrl+D" data-tip-pos="bottom" aria-label="Nhân bản"><svg class="t-ico"><use href="#i-copy"/></svg></button>
+        <button class="t-btn t-btn--ghost t-btn--icon t-btn--destructive" data-tip="Xoá  Delete" data-tip-pos="bottom" aria-label="Xoá"><svg class="t-ico"><use href="#i-trash"/></svg></button>
+      </div>
+      <div class="t-toolbar" role="toolbar" aria-label="Giao diện">
+        <div class="t-seg" id="arSeg" role="group" aria-label="Tỉ lệ khung"><button aria-pressed="true" data-ar-set="16:9">16:9</button><button aria-pressed="false" data-ar-set="4:5">4:5</button></div>
+        <span class="t-vsep"></span>
+        <div class="t-seg" id="themeSeg" role="group" aria-label="Chế độ sáng tối">
+          <button aria-pressed="false" data-theme-set="light" aria-label="Sáng" data-tip="Chế độ Sáng" data-tip-pos="bottom"><svg class="t-ico t-ico--sm"><use href="#i-sun"/></svg></button>
+          <button aria-pressed="true" data-theme-set="dark" aria-label="Tối" data-tip="Chế độ Tối" data-tip-pos="bottom"><svg class="t-ico t-ico--sm"><use href="#i-moon"/></svg></button>
+        </div>
+        <div class="t-swatches" id="accentSw" role="listbox" aria-label="Màu nhấn" style="gap:2px;margin:0 4px">
+          <span class="t-swatch" role="option" data-accent-set="blue" aria-selected="true" style="--c:#0A84FF" data-tip="Xanh hệ thống" data-tip-pos="bottom"></span>
+          <span class="t-swatch" role="option" data-accent-set="gold" aria-selected="false" style="--c:#C5A059" data-tip="S6X Gold" data-tip-pos="bottom"></span>
+        </div>
+        <button class="t-btn t-btn--ghost t-btn--icon" id="btnGallery" data-tip="Thư viện thành phần" data-tip-pos="bottom" aria-label="Thư viện thành phần"><svg class="t-ico"><use href="#i-palette"/></svg></button>
+      </div>
+      <span class="t-chip t-chip--ok" id="saveChip">Đã lưu</span>
+      <button class="t-btn" id="btnSave" data-tip="Lưu  Ctrl+S" data-tip-pos="bottom">Lưu</button>
+      <button class="t-btn t-btn--primary" id="btnExport"><svg class="t-ico t-ico--sm"><use href="#i-export"/></svg>Xuất video</button>
+    </div>
+  </header>
+
+  <div class="t-body">
+
+    <!-- ===== Sidebar trái ===== -->
+    <aside class="t-panel t-panel--side" aria-label="Thư viện">
+      <div style="height:var(--s-3);flex:none"></div>
+      <div class="t-tabs" role="tablist" id="sideTabs">
+        <button role="tab" aria-selected="true" data-pane="lib"><svg class="t-ico t-ico--sm"><use href="#i-grid"/></svg>Thư viện</button>
+        <button role="tab" aria-selected="false" data-pane="outline"><svg class="t-ico t-ico--sm"><use href="#i-list"/></svg>Dàn ý</button>
+      </div>
+
+      <!-- Thư viện -->
+      <div class="t-pane is-active" id="pane-lib">
+        <div class="t-subtabs" role="tablist" id="libTabs">
+          <button role="tab" aria-selected="true" data-sub="preset">Preset</button>
+          <button role="tab" aria-selected="false" data-sub="sfx">SFX</button>
+          <button role="tab" aria-selected="false" data-sub="music">Nhạc</button>
+          <button role="tab" aria-selected="false" data-sub="scene">Cảnh</button>
+        </div>
+
+        <div class="t-panel__scroll" style="padding-top:var(--s-1)">
+          <!-- Preset -->
+          <div class="t-sub is-active" data-sub-pane="preset">
+            <label class="t-search"><svg class="t-ico t-ico--sm"><use href="#i-search"/></svg><input class="t-field" placeholder="Tìm preset" aria-label="Tìm preset"></label>
+            <div class="t-seg t-seg--block t-seg--tight" style="margin:var(--s-3) 0" id="kindSeg">
+              <button aria-pressed="true">Phụ đề</button><button aria-pressed="false">Lower third</button><button aria-pressed="false">Callout</button><button aria-pressed="false">Chữ</button>
+            </div>
+            <div class="t-presets">
+              <button class="t-preset" aria-selected="true">
+                <span class="t-preset__thumb"><span class="t-mini t-mini--sub">Hãy nhớ <b>quy tắc</b></span></span>
+                <span class="t-preset__name">Karaoke vàng</span>
+                <span class="t-dots"><i class="is-active" style="--c:#C5A059"></i><i style="--c:#EDEDED"></i><i style="--c:#0A84FF"></i><small>3 kiểu</small></span>
+              </button>
+              <button class="t-preset" aria-selected="false">
+                <span class="t-preset__thumb"><span class="t-mini t-mini--sub" style="background:rgba(255,255,255,.92);color:#111">Hộp sáng</span></span>
+                <span class="t-preset__name">Hộp tối giản</span>
+                <span class="t-dots"><i class="is-active" style="--c:#fff"></i><i style="--c:#111"></i><small>2 kiểu</small></span>
+              </button>
+              <button class="t-preset" aria-selected="false">
+                <span class="t-preset__thumb"><span class="t-mini" style="font-size:14px;-webkit-text-stroke:2px #000;paint-order:stroke fill;color:#fff">VIỀN CHỮ</span></span>
+                <span class="t-preset__name">Viền đậm</span>
+                <span class="t-dots"><i class="is-active" style="--c:#FFD60A"></i><i style="--c:#fff"></i><i style="--c:#FF453A"></i><small>3 kiểu</small></span>
+              </button>
+              <button class="t-preset" aria-selected="false">
+                <span class="t-preset__thumb"><span class="t-mini t-mini--lower" style="padding:5px 12px"><span>Kính mờ</span></span></span>
+                <span class="t-preset__name">Kính mờ</span>
+                <span class="t-dots"><i class="is-active" style="--c:#cfe0ff"></i><i style="--c:#C5A059"></i><small>2 kiểu</small></span>
+              </button>
+            </div>
+            <button class="t-btn t-btn--primary t-btn--lg t-btn--block" style="margin-top:var(--s-3)">Áp dụng cho layer đang chọn</button>
+            <div class="t-notice t-notice--info" style="margin-top:var(--s-2)"><svg class="t-ico t-ico--sm"><use href="#i-sparkle"/></svg><span>Đổi biến thể sẽ giữ nguyên chữ, thời gian và vị trí.</span></div>
+
+            <hr class="t-sep">
+            <div class="t-caption" style="margin-bottom:var(--s-2)">Thêm tại playhead</div>
+            <div class="t-tiles">
+              <button class="t-tile"><span class="t-tile__ico"><svg class="t-ico"><use href="#i-text"/></svg></span><span><span class="t-tile__title">Chữ</span><span class="t-tile__sub" style="display:block">Tiêu đề nhanh</span></span></button>
+              <button class="t-tile is-on"><span class="t-tile__ico"><svg class="t-ico"><use href="#i-bubble"/></svg></span><span><span class="t-tile__title">Callout</span><span class="t-tile__sub" style="display:block">Đang dùng</span></span></button>
+              <button class="t-tile"><span class="t-tile__ico"><svg class="t-ico"><use href="#i-lower"/></svg></span><span><span class="t-tile__title">Lower third</span><span class="t-tile__sub" style="display:block">Tên + chức danh</span></span></button>
+              <button class="t-tile"><span class="t-tile__ico"><svg class="t-ico"><use href="#i-film"/></svg></span><span><span class="t-tile__title">Cảnh</span><span class="t-tile__sub" style="display:block">Toàn màn hình</span></span></button>
+            </div>
+          </div>
+
+          <!-- SFX -->
+          <div class="t-sub" data-sub-pane="sfx" hidden>
+            <label class="t-search"><svg class="t-ico t-ico--sm"><use href="#i-search"/></svg><input class="t-field" placeholder="Tìm âm thanh" aria-label="Tìm âm thanh"></label>
+            <div class="t-list" id="sfxList" style="margin-top:var(--s-2)">
+              <div class="t-list__head"><span class="t-caption">Whoosh</span></div>
+              <div class="t-sfx is-playing" aria-selected="true"><button class="t-sfx__play" aria-label="Nghe thử"><svg class="t-ico t-ico--sm"><use href="#i-pause"/></svg></button><div class="t-sfx__name">Whoosh mềm<small>Chuyển cảnh · nhẹ</small></div><div class="t-sfx__wave" data-wave="11"></div><div class="t-sfx__dur">0,8 s</div></div>
+              <div class="t-sfx"><button class="t-sfx__play" aria-label="Nghe thử"><svg class="t-ico t-ico--sm"><use href="#i-play"/></svg></button><div class="t-sfx__name">Whoosh nhanh<small>Chuyển cảnh · mạnh</small></div><div class="t-sfx__wave" data-wave="12"></div><div class="t-sfx__dur">0,5 s</div></div>
+              <div class="t-sfx"><button class="t-sfx__play" aria-label="Nghe thử"><svg class="t-ico t-ico--sm"><use href="#i-play"/></svg></button><div class="t-sfx__name">Whoosh dài<small>Chuyển cảnh · rộng</small></div><div class="t-sfx__wave" data-wave="13"></div><div class="t-sfx__dur">1,4 s</div></div>
+              <div class="t-list__head"><span class="t-caption">Pop &amp; Click</span></div>
+              <div class="t-sfx"><button class="t-sfx__play" aria-label="Nghe thử"><svg class="t-ico t-ico--sm"><use href="#i-play"/></svg></button><div class="t-sfx__name">Pop bong bóng<small>Xuất hiện chữ</small></div><div class="t-sfx__wave" data-wave="14"></div><div class="t-sfx__dur">0,3 s</div></div>
+              <div class="t-sfx"><button class="t-sfx__play" aria-label="Nghe thử"><svg class="t-ico t-ico--sm"><use href="#i-play"/></svg></button><div class="t-sfx__name">Click nhẹ<small>Giao diện</small></div><div class="t-sfx__wave" data-wave="15"></div><div class="t-sfx__dur">0,2 s</div></div>
+              <div class="t-list__head"><span class="t-caption">Nhấn mạnh</span></div>
+              <div class="t-sfx"><button class="t-sfx__play" aria-label="Nghe thử"><svg class="t-ico t-ico--sm"><use href="#i-play"/></svg></button><div class="t-sfx__name">Ding chuông<small>Điểm nhấn</small></div><div class="t-sfx__wave" data-wave="16"></div><div class="t-sfx__dur">1,1 s</div></div>
+              <div class="t-sfx"><button class="t-sfx__play" aria-label="Nghe thử"><svg class="t-ico t-ico--sm"><use href="#i-play"/></svg></button><div class="t-sfx__name">Stamp đóng dấu<small>Điểm nhấn · mạnh</small></div><div class="t-sfx__wave" data-wave="17"></div><div class="t-sfx__dur">0,6 s</div></div>
+            </div>
+          </div>
+
+          <!-- Nhạc -->
+          <div class="t-sub" data-sub-pane="music" hidden>
+            <div class="t-list">
+              <div class="t-sfx" style="grid-template-columns:26px minmax(0,1fr) 54px 30px"><button class="t-sfx__play" aria-label="Nghe thử"><svg class="t-ico t-ico--sm"><use href="#i-play"/></svg></button><div class="t-sfx__name">Ánh sáng ban mai<small>Truyền cảm hứng · 92 BPM</small></div><div class="t-sfx__wave" data-wave="21"></div><div class="t-sfx__dur">2:14</div></div>
+              <div class="t-sfx"><button class="t-sfx__play" aria-label="Nghe thử"><svg class="t-ico t-ico--sm"><use href="#i-play"/></svg></button><div class="t-sfx__name">Nền công nghệ<small>Tối giản · 110 BPM</small></div><div class="t-sfx__wave" data-wave="22"></div><div class="t-sfx__dur">1:48</div></div>
+              <div class="t-sfx"><button class="t-sfx__play" aria-label="Nghe thử"><svg class="t-ico t-ico--sm"><use href="#i-play"/></svg></button><div class="t-sfx__name">Chiều thong thả<small>Nhẹ nhàng · 80 BPM</small></div><div class="t-sfx__wave" data-wave="23"></div><div class="t-sfx__dur">3:02</div></div>
+            </div>
+          </div>
+
+          <!-- Cảnh -->
+          <div class="t-sub" data-sub-pane="scene" hidden>
+            <div class="t-presets">
+              <button class="t-preset"><span class="t-preset__thumb scene-thumb"><span class="t-mini t-mini--text">Mở đầu</span></span><span class="t-preset__name">Tiêu đề lớn</span></button>
+              <button class="t-preset"><span class="t-preset__thumb scene-thumb"><span class="t-mini" style="font-size:20px;color:#C5A059">01</span></span><span class="t-preset__name">Số thứ tự</span></button>
+              <button class="t-preset"><span class="t-preset__thumb scene-thumb"><span class="t-mini">Danh sách ✓</span></span><span class="t-preset__name">Checklist</span></button>
+              <button class="t-preset"><span class="t-preset__thumb scene-thumb"><span class="t-mini">So sánh</span></span><span class="t-preset__name">Hai cột</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dàn ý -->
+      <div class="t-pane" id="pane-outline">
+        <div class="t-panel__scroll">
+          <div class="t-notice t-notice--info" style="margin-bottom:var(--s-3)"><svg class="t-ico t-ico--sm"><use href="#i-list"/></svg><span>Dàn ý tự động từ bản phiên âm. Bấm một mục để nhảy tới đoạn đó.</span></div>
+          <div class="t-outline">
+            <div class="t-outline__item"><span class="t-outline__id">1</span><span>Mở đầu: vì sao video bị chê “khó xem”</span><span class="t-outline__time">0:00</span></div>
+            <div class="t-outline__item t-outline__item--sub"><span class="t-outline__id">1.1</span><span>Câu hỏi gây tò mò</span><span class="t-outline__time">0:00</span></div>
+            <div class="t-outline__item t-outline__item--sub"><span class="t-outline__id">1.2</span><span>Giới thiệu người nói</span><span class="t-outline__time">0:02</span></div>
+            <div class="t-outline__item is-active"><span class="t-outline__id">2</span><span>Quy tắc 3 giây</span><span class="t-outline__time">0:08</span></div>
+            <div class="t-outline__item t-outline__item--sub is-active"><span class="t-outline__id">2.1</span><span>Hook trong 3 giây đầu</span><span class="t-outline__time">0:08</span></div>
+            <div class="t-outline__item t-outline__item--sub"><span class="t-outline__id">2.2</span><span>Đổi cảnh mỗi 3 giây</span><span class="t-outline__time">0:14</span></div>
+            <div class="t-outline__item"><span class="t-outline__id">3</span><span>Ví dụ thực tế</span><span class="t-outline__time">0:19</span></div>
+            <div class="t-outline__item"><span class="t-outline__id">4</span><span>Kết và lời kêu gọi</span><span class="t-outline__time">0:28</span></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== Khung xem trước ===== -->
+    <section class="t-panel t-panel--stage" aria-label="Xem trước">
+      <div class="t-stage">
+        <div class="t-canvas t-canvas--sel" id="canvas" data-ar="16:9">
+          <svg class="frame" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+              <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#46657f"/><stop offset=".55" stop-color="#26394d"/><stop offset="1" stop-color="#131d2b"/></linearGradient>
+              <radialGradient id="lamp" cx=".15" cy=".2" r=".55"><stop offset="0" stop-color="#ffe2a8" stop-opacity=".5"/><stop offset="1" stop-color="#ffe2a8" stop-opacity="0"/></radialGradient>
+              <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e2b496"/><stop offset="1" stop-color="#b98466"/></linearGradient>
+              <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b3340"/><stop offset="1" stop-color="#171c25"/></linearGradient>
+            </defs>
+            <rect width="640" height="360" fill="url(#bg)"/><rect width="640" height="360" fill="url(#lamp)"/>
+            <rect x="60" y="60" width="150" height="190" rx="8" fill="#1a2a3a" opacity=".55"/><rect x="76" y="80" width="100" height="6" rx="3" fill="#5a7894" opacity=".7"/><rect x="76" y="98" width="70" height="6" rx="3" fill="#5a7894" opacity=".5"/><rect x="76" y="116" width="90" height="6" rx="3" fill="#5a7894" opacity=".4"/>
+            <path d="M270 360c6-70 36-100 90-104s84 34 90 104Z" fill="url(#shirt)"/>
+            <rect x="338" y="214" width="44" height="46" rx="16" fill="url(#skin)"/>
+            <ellipse cx="360" cy="168" rx="46" ry="56" fill="url(#skin)"/>
+            <path d="M313 162c-6-50 22-72 48-72 32 0 54 28 46 74-6-28-24-42-48-42-22 0-40 12-46 40Z" fill="#241a16"/>
+            <ellipse cx="344" cy="172" rx="3.5" ry="4.5" fill="#2a1d18"/><ellipse cx="376" cy="172" rx="3.5" ry="4.5" fill="#2a1d18"/>
+            <path d="M348 198q12 9 24 0" stroke="#7a3f33" stroke-width="3" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div class="ov ov-lower"><i></i><div><strong>Nguyễn Văn An</strong><small>Trưởng phòng Đào tạo · S6X</small></div></div>
+          <div class="ov ov-call" id="ghostCall" style="opacity:.55">3 bước</div>
+          <div class="ov ov-sub"><span>Đồng thời, hãy nhớ <b>quy tắc</b> 3 giây</span></div>
+          <div class="t-safegrid" id="safeGrid"><i class="t-safegrid__thirds"></i><i class="t-safegrid__action"></i><i class="t-safegrid__title"></i></div>
+          <div class="t-sel" id="selBox">
+            <span class="t-sel__tag">Phụ đề · L-0042</span>
+            <i class="t-sel__h" style="left:0;top:0"></i><i class="t-sel__h" style="left:50%;top:0"></i><i class="t-sel__h" style="left:100%;top:0"></i>
+            <i class="t-sel__h" style="left:0;top:50%"></i><i class="t-sel__h" style="left:100%;top:50%"></i>
+            <i class="t-sel__h" style="left:0;top:100%"></i><i class="t-sel__h" style="left:50%;top:100%"></i><i class="t-sel__h" style="left:100%;top:100%"></i>
+          </div>
+          <div class="t-sel t-sel--ghost" id="ghostBox"><span class="t-sel__tag" style="top:-21px;left:auto;right:0">Callout · 11,6 s</span></div>
+        </div>
+      </div>
+
+      <div class="t-transport" role="toolbar" aria-label="Phát">
+        <button class="t-btn t-btn--ghost t-btn--icon" data-tip="Về đầu" aria-label="Về đầu"><svg class="t-ico t-ico--sm"><use href="#i-back"/></svg></button>
+        <button class="t-btn t-btn--primary t-btn--icon t-play" id="btnPlay" aria-label="Phát / dừng"><svg class="t-ico"><use href="#i-play" id="playUse"/></svg></button>
+        <button class="t-btn t-btn--ghost t-btn--icon" data-tip="Tới cuối" aria-label="Tới cuối"><svg class="t-ico t-ico--sm"><use href="#i-fwd"/></svg></button>
+        <span class="t-timecode">00:12:08<small> / 00:34:00</small></span>
+        <span class="t-vsep"></span>
+        <div style="position:relative">
+          <button class="t-btn t-btn--ghost t-btn--sm" id="btnGrid" aria-haspopup="menu" aria-pressed="false" data-tip="Lưới an toàn tuỳ chọn (chỉ trong editor)"><svg class="t-ico t-ico--sm"><use href="#i-safe"/></svg>Lưới an toàn<svg class="t-ico t-ico--sm" style="width:12px;height:12px"><use href="#i-chevd"/></svg></button>
+          <div class="t-popover t-popover--up" id="platPop" role="menu" style="bottom:calc(100% + 12px);left:50%;margin-left:-96px;min-width:192px;--arrow:50%;--ox:50%">
+            <div class="t-popover__item" role="menuitemcheckbox" aria-checked="false" data-grid="title"><svg class="t-ico t-ico--sm"><use href="#i-check"/></svg>Title-safe 90%</div>
+            <div class="t-popover__item" role="menuitemcheckbox" aria-checked="false" data-grid="action"><svg class="t-ico t-ico--sm"><use href="#i-check"/></svg>Action-safe 93%</div>
+            <div class="t-popover__item" role="menuitemcheckbox" aria-checked="false" data-grid="thirds"><svg class="t-ico t-ico--sm"><use href="#i-check"/></svg>Chia ba</div>
+          </div>
+        </div>
+        <button class="t-btn t-btn--ghost t-btn--icon" data-tip="Reframe video nguồn (V)" aria-label="Reframe"><svg class="t-ico t-ico--sm"><use href="#i-crop"/></svg></button>
+      </div>
+      <div class="t-toast-host" style="bottom:70px"><div class="t-toast is-show" id="toast"><span class="t-toast__ico"><svg class="t-ico"><use href="#i-check"/></svg></span><span id="toastTxt">Đã lưu</span></div></div>
+    </section>
+
+    <!-- ===== Inspector phải ===== -->
+    <aside class="t-panel t-panel--insp" aria-label="Thuộc tính">
+      <div class="t-insp-head">
+        <span class="t-insp-head__ico"><svg class="t-ico"><use href="#i-text"/></svg></span>
+        <div class="grow"><div class="t-insp-head__t">Phụ đề</div><div class="t-insp-head__s">L-0042 · 11,6 s → 14,8 s</div></div>
+        <button class="t-btn t-btn--ghost t-btn--icon t-btn--sm" aria-label="Bỏ chọn"><svg class="t-ico t-ico--sm"><use href="#i-x"/></svg></button>
+      </div>
+      <div class="t-panel__scroll" style="padding-top:var(--s-3)">
+
+        <details class="t-group" open>
+          <summary><svg class="t-ico"><use href="#i-text"/></svg>Nội dung<svg class="t-ico t-chev"><use href="#i-chev"/></svg></summary>
+          <div class="t-group__body">
+            <textarea class="t-field" aria-label="Nội dung">Đồng thời, hãy nhớ quy tắc 3 giây</textarea>
+            <div class="t-prop"><label>Chế độ</label><div class="t-prop__ctl"><div class="t-seg t-seg--block" style="flex:1"><button aria-pressed="false">Cả dòng</button><button aria-pressed="true">Từng từ</button></div></div></div>
+          </div>
+        </details>
+
+        <details class="t-group" open>
+          <summary><svg class="t-ico"><use href="#i-sliders"/></svg>Kiểu chữ<svg class="t-ico t-chev"><use href="#i-chev"/></svg></summary>
+          <div class="t-group__body">
+            <div class="t-prop"><label>Phông</label><div class="t-prop__ctl"><div class="t-select grow"><select class="t-field" aria-label="Phông"><option>Be Vietnam Pro</option><option>Lexend</option><option>Nunito</option></select></div></div></div>
+            <div class="t-prop"><label>Cỡ</label><div class="t-prop__ctl">
+              <div class="t-stepper" style="width:86px"><input value="56" aria-label="Cỡ chữ"><span class="t-stepper__unit">px</span><span class="t-stepper__btns"><button aria-label="Tăng"><svg class="t-ico"><use href="#i-chevu"/></svg></button><button aria-label="Giảm"><svg class="t-ico"><use href="#i-chevd"/></svg></button></span></div>
+              </div></div>
+            <div class="t-prop"><label>Độ đậm</label><div class="t-prop__ctl"><div class="t-seg t-seg--block" style="flex:1"><button aria-pressed="false">Thường</button><button aria-pressed="false">Đậm</button><button aria-pressed="true">Dày</button></div></div></div>
+            <div class="t-prop"><label>Màu chữ</label><div class="t-prop__ctl"><div class="t-color grow"><span class="t-swatch" style="--c:#EDEDED"></span><input value="#EDEDED" aria-label="Màu chữ"><input class="t-color__alpha" value="100%" aria-label="Độ đục"></div></div></div>
+            <div class="t-prop"><label>Màu nhấn</label><div class="t-prop__ctl"><div class="t-color grow"><span class="t-swatch" style="--c:#C5A059"></span><input value="#C5A059" aria-label="Màu nhấn"><input class="t-color__alpha" value="100%" aria-label="Độ đục"></div></div></div>
+            <div class="t-prop"><label>Căn lề</label><div class="t-prop__ctl"><div class="t-seg t-seg--block" style="flex:1"><button aria-pressed="false">Trái</button><button aria-pressed="true">Giữa</button><button aria-pressed="false">Phải</button></div></div></div>
+          </div>
+        </details>
+
+        <details class="t-group">
+          <summary><svg class="t-ico"><use href="#i-box"/></svg>Hộp<svg class="t-ico t-chev"><use href="#i-chev"/></svg></summary>
+          <div class="t-group__body">
+            <div class="t-prop"><label>Nền</label><div class="t-prop__ctl"><div class="t-color grow"><span class="t-swatch" style="--c:rgba(12,12,12,.72)"></span><input value="#0C0C0C" aria-label="Màu nền"><input class="t-color__alpha" value="72%" aria-label="Độ đục"></div></div></div>
+            <div class="t-prop"><label>Bo góc</label><div class="t-prop__ctl"><input type="range" class="t-slider" min="0" max="48" value="16" style="--p:33%" aria-label="Bo góc"><span class="t-num" style="width:30px;text-align:right;color:var(--label-2)">16</span></div></div>
+          </div>
+        </details>
+
+        <details class="t-group" open>
+          <summary><svg class="t-ico"><use href="#i-move"/></svg>Vị trí<svg class="t-ico t-chev"><use href="#i-chev"/></svg></summary>
+          <div class="t-group__body">
+            <div class="t-grid2">
+              <div class="t-stepper"><span class="t-stepper__lbl" style="padding-left:8px">X</span><input value="14" aria-label="X"><span class="t-stepper__unit">%</span><span class="t-stepper__btns"><button aria-label="Tăng"><svg class="t-ico"><use href="#i-chevu"/></svg></button><button aria-label="Giảm"><svg class="t-ico"><use href="#i-chevd"/></svg></button></span></div>
+              <div class="t-stepper"><span class="t-stepper__lbl" style="padding-left:8px">Y</span><input value="73,5" aria-label="Y"><span class="t-stepper__unit">%</span><span class="t-stepper__btns"><button aria-label="Tăng"><svg class="t-ico"><use href="#i-chevu"/></svg></button><button aria-label="Giảm"><svg class="t-ico"><use href="#i-chevd"/></svg></button></span></div>
+              <div class="t-stepper"><span class="t-stepper__lbl" style="padding-left:8px">R</span><input value="72" aria-label="Rộng"><span class="t-stepper__unit">%</span><span class="t-stepper__btns"><button aria-label="Tăng"><svg class="t-ico"><use href="#i-chevu"/></svg></button><button aria-label="Giảm"><svg class="t-ico"><use href="#i-chevd"/></svg></button></span></div>
+              <div class="t-stepper"><span class="t-stepper__lbl" style="padding-left:8px">C</span><input value="15" aria-label="Cao"><span class="t-stepper__unit">%</span><span class="t-stepper__btns"><button aria-label="Tăng"><svg class="t-ico"><use href="#i-chevu"/></svg></button><button aria-label="Giảm"><svg class="t-ico"><use href="#i-chevd"/></svg></button></span></div>
+            </div>
+            <div class="t-notice t-notice--info"><svg class="t-ico t-ico--sm"><use href="#i-safe"/></svg><span>Nằm trong vùng title-safe (90%). Bật lưới để căn theo lề.</span></div>
+          </div>
+        </details>
+
+        <details class="t-group">
+          <summary><svg class="t-ico"><use href="#i-clock"/></svg>Thời gian<svg class="t-ico t-chev"><use href="#i-chev"/></svg></summary>
+          <div class="t-group__body">
+            <div class="t-grid2">
+              <div class="t-stepper"><span class="t-stepper__lbl" style="padding-left:8px">Bắt đầu</span><input value="11,60" aria-label="Bắt đầu"><span class="t-stepper__unit">s</span></div>
+              <div class="t-stepper"><span class="t-stepper__lbl" style="padding-left:8px">Dài</span><input value="3,20" aria-label="Thời lượng"><span class="t-stepper__unit">s</span></div>
+            </div>
+          </div>
+        </details>
+
+        <details class="t-group">
+          <summary><svg class="t-ico"><use href="#i-motion"/></svg>Hoạt ảnh<svg class="t-ico t-chev"><use href="#i-chev"/></svg></summary>
+          <div class="t-group__body">
+            <div class="t-prop"><label>Vào</label><div class="t-prop__ctl"><div class="t-select grow"><select class="t-field" aria-label="Hoạt ảnh vào"><option>Rise</option><option>Pop</option><option>Zoom</option></select></div><div class="t-stepper" style="width:76px"><input value="0,45" aria-label="Thời lượng vào"><span class="t-stepper__unit">s</span></div></div></div>
+            <div class="t-prop"><label>Ra</label><div class="t-prop__ctl"><div class="t-select grow"><select class="t-field" aria-label="Hoạt ảnh ra"><option>Fade</option><option>Shrink</option></select></div><div class="t-stepper" style="width:76px"><input value="0,30" aria-label="Thời lượng ra"><span class="t-stepper__unit">s</span></div></div></div>
+          </div>
+        </details>
+
+        <details class="t-group">
+          <summary><svg class="t-ico"><use href="#i-link"/></svg>Âm thanh liên kết<svg class="t-ico t-chev"><use href="#i-chev"/></svg></summary>
+          <div class="t-group__body">
+            <div class="t-prop"><label>Liên kết</label><div class="t-prop__ctl"><label class="t-switch"><input type="checkbox" role="switch" checked aria-label="Liên kết SFX"><i></i></label><span style="color:var(--label-2);font-size:var(--fs-12)">Đi theo lúc vào</span></div></div>
+            <div class="t-sfx" style="padding:0;grid-template-columns:26px minmax(0,1fr) 54px"><button class="t-sfx__play" aria-label="Nghe thử"><svg class="t-ico t-ico--sm"><use href="#i-play"/></svg></button><div class="t-sfx__name">Pop bong bóng<small>Pop · 0,3 s</small></div><div class="t-sfx__wave" data-wave="14"></div></div>
+            <div class="t-prop"><label>Âm lượng</label><div class="t-prop__ctl"><div class="t-slider-db" style="--zero-n:.8"><input type="range" class="t-slider" min="-40" max="10" value="-8" style="--p:64%" aria-label="Gain dB"></div><span class="t-num" style="width:44px;text-align:right;color:var(--label-2)">−8 dB</span></div></div>
+          </div>
+        </details>
+      </div>
+    </aside>
+
+    <!-- ===== Timeline ===== -->
+    <section class="t-panel t-panel--tl" aria-label="Timeline">
+      <div class="t-tl" id="tl" style="--pps:30px">
+        <div class="t-tl__bar">
+          <span class="t-panel__title">Timeline</span>
+          <div class="t-seg" role="group" aria-label="Công cụ"><button aria-pressed="true" aria-label="Chọn">Chọn</button><button aria-pressed="false" aria-label="Cắt"><svg class="t-ico t-ico--sm"><use href="#i-scissors"/></svg></button></div>
+          <button class="t-btn t-btn--sm is-on" aria-pressed="true" data-tip="Bám dính (snap)"><svg class="t-ico t-ico--sm"><use href="#i-magnet"/></svg>Snap</button>
+          <span class="grow"></span>
+          <span class="t-kbd">Space phát/dừng · ←/→ 1 khung · Ctrl+cuộn thu phóng</span>
+          <span class="t-vsep"></span>
+          <svg class="t-ico t-ico--sm" style="color:var(--label-2)"><use href="#i-minus"/></svg>
+          <input type="range" class="t-slider" min="0" max="100" value="45" style="--p:45%;width:96px" aria-label="Thu phóng">
+          <svg class="t-ico t-ico--sm" style="color:var(--label-2)"><use href="#i-plus"/></svg>
+        </div>
+
+        <div class="t-tl__scroll">
+          <div class="t-tl__inner" id="tlInner" style="width:calc(var(--head-w) + 34 * var(--pps))">
+            <div class="t-ruler">
+              <div class="t-ruler__head"><span>Track</span><button class="t-btn t-btn--ghost t-btn--icon t-btn--sm" aria-label="Thêm track" data-tip="Thêm track" data-tip-pos="bottom" style="width:20px;height:20px"><svg class="t-ico t-ico--sm"><use href="#i-plus"/></svg></button></div>
+              <div class="t-ruler__lane" id="rulerLane" style="width:calc(34*var(--pps))"></div>
+            </div>
+
+            <div class="t-track" style="--h:28px">
+              <div class="t-track__head"><svg class="t-ico t-ico--sm t-track__ico"><use href="#i-layers"/></svg><span class="t-track__name">Đồ hoạ</span>
+                <span class="t-track__btns"><button class="t-tbtn" aria-label="Khoá"><svg class="t-ico"><use href="#i-lock"/></svg></button><button class="t-tbtn" aria-label="Ẩn"><svg class="t-ico"><use href="#i-eye"/></svg></button></span></div>
+              <div class="t-track__lane" style="width:calc(34*var(--pps))">
+                <div class="t-clip t-clip--graphic" style="left:calc(2*var(--pps));width:calc(4.5*var(--pps))"><span class="t-clip__label"><svg class="t-ico t-ico--sm" style="width:11px;height:11px"><use href="#i-lower"/></svg>Lower third</span></div>
+                <div class="t-clip t-clip--graphic is-dragging" style="left:calc(11.6*var(--pps));width:calc(4*var(--pps))"><span class="t-clip__label"><svg class="t-ico t-ico--sm" style="width:11px;height:11px"><use href="#i-bubble"/></svg>Callout · 3 bước</span><i class="t-clip__edge t-clip__edge--l"></i><i class="t-clip__edge t-clip__edge--r"></i></div>
+                <div class="t-clip t-clip--graphic" style="left:calc(19.6*var(--pps));width:calc(4*var(--pps))"><span class="t-clip__label">Hình minh hoạ</span></div>
+                <div class="t-clip t-clip--graphic" style="left:calc(29*var(--pps));width:calc(3.8*var(--pps))"><span class="t-clip__label">Callout · Đăng ký</span></div>
+              </div>
+            </div>
+
+            <div class="t-track" style="--h:26px">
+              <div class="t-track__head"><svg class="t-ico t-ico--sm t-track__ico"><use href="#i-list"/></svg><span class="t-track__name">Tiêu đề mục</span>
+                <span class="t-track__btns"><button class="t-tbtn" aria-label="Khoá"><svg class="t-ico"><use href="#i-lock"/></svg></button><button class="t-tbtn" aria-label="Ẩn"><svg class="t-ico"><use href="#i-eye"/></svg></button></span></div>
+              <div class="t-track__lane" style="width:calc(34*var(--pps))">
+                <div class="t-clip t-clip--title" style="left:calc(0*var(--pps));width:calc(8*var(--pps) - 2px)"><span class="t-clip__label">1 · Mở đầu</span></div>
+                <div class="t-clip t-clip--title" style="left:calc(8*var(--pps));width:calc(11.5*var(--pps) - 2px)"><span class="t-clip__label">2 · Quy tắc 3 giây</span></div>
+                <div class="t-clip t-clip--title" style="left:calc(19.5*var(--pps));width:calc(8.5*var(--pps) - 2px)"><span class="t-clip__label">3 · Ví dụ thực tế</span></div>
+                <div class="t-clip t-clip--title" style="left:calc(28*var(--pps));width:calc(6*var(--pps) - 2px)"><span class="t-clip__label">4 · Kết</span></div>
+              </div>
+            </div>
+
+            <div class="t-track" style="--h:26px">
+              <div class="t-track__head"><svg class="t-ico t-ico--sm t-track__ico"><use href="#i-text"/></svg><span class="t-track__name">Phụ đề</span>
+                <span class="t-track__btns"><button class="t-tbtn" aria-label="Khoá"><svg class="t-ico"><use href="#i-lock"/></svg></button><button class="t-tbtn" aria-label="Ẩn"><svg class="t-ico"><use href="#i-eye"/></svg></button></span></div>
+              <div class="t-track__lane" id="subLane" style="width:calc(34*var(--pps))"></div>
+            </div>
+
+            <div class="t-track" style="--h:36px">
+              <div class="t-track__head"><svg class="t-ico t-ico--sm t-track__ico"><use href="#i-film"/></svg><span class="t-track__name">Video nguồn</span>
+                <span class="t-track__btns"><button class="t-tbtn" aria-label="Khoá"><svg class="t-ico"><use href="#i-lock"/></svg></button><button class="t-tbtn" aria-label="Ẩn"><svg class="t-ico"><use href="#i-eye"/></svg></button></span></div>
+              <div class="t-track__lane" style="width:calc(34*var(--pps))">
+                <div class="t-clip t-clip--video" style="left:0;width:calc(34*var(--pps))"><div class="t-clip__thumbs" id="thumbs"></div><span class="t-clip__label">cut.mp4 · 9:16</span></div>
+              </div>
+            </div>
+
+            <div class="t-track" style="--h:38px">
+              <div class="t-track__head"><svg class="t-ico t-ico--sm t-track__ico"><use href="#i-mic"/></svg><span class="t-track__name">Giọng<small>Cố định · −2 dB</small></span>
+                <span class="t-track__btns"><button class="t-tbtn t-tbtn--mute" aria-pressed="false" aria-label="Tắt tiếng">M</button><button class="t-tbtn t-tbtn--solo" aria-pressed="false" aria-label="Solo">S</button><button class="t-tbtn" aria-pressed="true" aria-label="Cố định"><svg class="t-ico"><use href="#i-lock"/></svg></button></span></div>
+              <div class="t-track__lane" style="width:calc(34*var(--pps))">
+                <div class="t-clip t-clip--audio" style="left:0;width:calc(34*var(--pps))" id="voiceClip">
+                  <span class="t-clip__label">Giọng gốc · audio.wav</span>
+                  <i class="t-fade-shade t-fade-shade--in" style="width:18px"></i><i class="t-fade t-fade--in"></i>
+                  <i class="t-fade-shade t-fade-shade--out" style="width:30px"></i><i class="t-fade t-fade--out"></i>
+                  <div class="t-gain" style="--y:34%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="t-track" style="--h:26px">
+              <div class="t-track__head"><svg class="t-ico t-ico--sm t-track__ico"><use href="#i-wave"/></svg><span class="t-track__name">SFX</span>
+                <span class="t-track__btns"><button class="t-tbtn t-tbtn--mute" aria-pressed="false" aria-label="Tắt tiếng">M</button><button class="t-tbtn t-tbtn--solo" aria-pressed="false" aria-label="Solo">S</button><button class="t-tbtn" aria-label="Khoá"><svg class="t-ico"><use href="#i-lock"/></svg></button></span></div>
+              <div class="t-track__lane" id="sfxLane" style="width:calc(34*var(--pps))"></div>
+            </div>
+
+            <div class="t-track" style="--h:42px">
+              <div class="t-track__head"><svg class="t-ico t-ico--sm t-track__ico"><use href="#i-note"/></svg><span class="t-track__name">Nhạc<small>Ducking −12 dB</small></span>
+                <span class="t-track__btns"><button class="t-tbtn t-tbtn--mute" aria-pressed="false" aria-label="Tắt tiếng">M</button><button class="t-tbtn t-tbtn--solo" aria-pressed="false" aria-label="Solo">S</button><button class="t-tbtn" aria-label="Khoá"><svg class="t-ico"><use href="#i-lock"/></svg></button></span></div>
+              <div class="t-track__lane" style="width:calc(34*var(--pps))">
+                <div class="t-clip t-clip--music" style="left:0;width:calc(34*var(--pps))" id="musicClip">
+                  <span class="t-clip__label">Ánh sáng ban mai · tự hạ khi có giọng</span>
+                  <i class="t-fade-shade t-fade-shade--out" style="width:44px"></i><i class="t-fade t-fade--out"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="t-range" style="left:calc(var(--head-w) + 14*var(--pps));width:calc(4*var(--pps));display:none"></div>
+            <div class="t-snap" style="left:calc(var(--head-w) + 11.6*var(--pps))"></div>
+            <div class="t-dragtip" style="left:calc(var(--head-w) + 15.6*var(--pps) + 8px);top:32px;display:none" id="dragTip">11,6 → 15,6 s</div>
+            <div class="t-playhead" style="left:calc(var(--head-w) + 12.4*var(--pps))"><span class="t-playhead__head"></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Menu ngữ cảnh -->
+    <div class="t-menu" id="ctx" role="menu">
+      <div class="t-menu__item"><svg class="t-ico t-ico--sm"><use href="#i-scissors"/></svg><span>Cắt tại playhead</span><span>S</span></div>
+      <div class="t-menu__item"><svg class="t-ico t-ico--sm"><use href="#i-copy"/></svg><span>Nhân bản</span><span>Ctrl+D</span></div>
+      <div class="t-menu__item"><svg class="t-ico t-ico--sm"><use href="#i-link"/></svg><span>Bỏ liên kết SFX</span><span></span></div>
+      <div class="t-menu__sep"></div>
+      <div class="t-menu__item"><svg class="t-ico t-ico--sm"><use href="#i-sparkle"/></svg><span>Đổi preset…</span><span></span></div>
+      <div class="t-menu__sep"></div>
+      <div class="t-menu__item t-menu__item--danger"><svg class="t-ico t-ico--sm"><use href="#i-trash"/></svg><span>Xoá</span><span>Delete</span></div>
+    </div>
+
+    <!-- Thư viện thành phần -->
+    <div class="t-sheet" id="sheet" role="dialog" aria-label="Thư viện thành phần">
+      <div class="t-sheet__card gal">
+        <div class="row" style="margin-bottom:var(--s-2)"><span class="t-panel__title" style="font-size:var(--fs-17)">Thư viện thành phần</span><span class="grow"></span><button class="t-btn t-btn--icon t-btn--ghost" id="sheetClose" aria-label="Đóng"><svg class="t-ico"><use href="#i-x"/></svg></button></div>
+        <h4>Nút</h4>
+        <div class="row"><button class="t-btn t-btn--primary">Chính</button><button class="t-btn">Phụ</button><button class="t-btn t-btn--ghost">Ẩn nền</button><button class="t-btn t-btn--destructive">Xoá layer</button><button class="t-btn" disabled>Vô hiệu</button><button class="t-btn t-btn--icon"><svg class="t-ico"><use href="#i-plus"/></svg></button><button class="t-btn t-btn--icon t-btn--primary"><svg class="t-ico"><use href="#i-play"/></svg></button></div>
+        <h4>Segmented · Switch · Chip</h4>
+        <div class="row"><div class="t-seg"><button aria-pressed="true">Cả dòng</button><button aria-pressed="false">Từng từ</button></div><label class="t-switch"><input type="checkbox" role="switch" checked aria-label="Bật"><i></i></label><label class="t-switch"><input type="checkbox" role="switch" aria-label="Tắt"><i></i></label><span class="t-chip t-chip--ok">Đã lưu</span><span class="t-chip t-chip--dirty">Chưa lưu</span><span class="t-chip t-chip--err">Lỗi lưu</span></div>
+        <h4>Slider · vạch 0 dB · slider dọc</h4>
+        <div class="row" style="align-items:flex-end;gap:var(--s-6)">
+          <div style="width:160px"><input type="range" class="t-slider" value="60" style="--p:60%" aria-label="Slider"></div>
+          <div style="width:200px;padding-top:12px"><div class="t-slider-db" style="--zero-n:.8"><span class="t-slider-db__label">0</span><input type="range" class="t-slider" min="-40" max="10" value="-6" style="--p:68%" aria-label="Gain"></div></div>
+          <div class="row" style="gap:var(--s-3)"><input type="range" class="t-slider t-slider--v" min="0" max="100" value="70" style="--p:70%" aria-label="Gain dọc"><div class="t-meter" style="--lv:62%"></div></div>
+        </div>
+        <h4>Ô nhập · Stepper · Màu · Tìm kiếm</h4>
+        <div class="row"><div style="width:150px"><input class="t-field" placeholder="Nhập chữ"></div><div style="width:150px"><input class="t-field t-field--invalid" value="Giá trị sai"></div><div class="t-stepper" style="width:96px"><input value="42" aria-label="Số"><span class="t-stepper__unit">px</span><span class="t-stepper__btns"><button aria-label="Tăng"><svg class="t-ico"><use href="#i-chevu"/></svg></button><button aria-label="Giảm"><svg class="t-ico"><use href="#i-chevd"/></svg></button></span></div><div class="t-color" style="width:170px"><span class="t-swatch" style="--c:rgba(197,160,89,.8)"></span><input value="#C5A059" aria-label="Màu"><input class="t-color__alpha" value="80%" aria-label="Độ đục"></div><label class="t-search" style="width:160px"><svg class="t-ico t-ico--sm"><use href="#i-search"/></svg><input class="t-field" placeholder="Tìm"></label></div>
+        <h4>Tile · Tooltip · Toast · HUD · Menu · Popover</h4>
+        <div class="row" style="align-items:flex-start">
+          <div class="t-tiles" style="width:200px"><button class="t-tile is-on"><span class="t-tile__ico"><svg class="t-ico"><use href="#i-safe"/></svg></span><span class="t-tile__title">An toàn</span></button><button class="t-tile"><span class="t-tile__ico"><svg class="t-ico"><use href="#i-magnet"/></svg></span><span class="t-tile__title">Snap</span></button></div>
+          <div class="t-hud"><svg class="t-ico"><use href="#i-volume"/></svg><div class="t-hud__bar"><i style="--v:62%"></i></div><span class="t-hud__label">Giọng −2 dB</span></div>
+          <div style="display:grid;gap:var(--s-3)"><span class="t-tip">Bám dính vào playhead</span><span class="t-toast"><span class="t-toast__ico"><svg class="t-ico"><use href="#i-check"/></svg></span>Đã lưu</span></div>
+          <div class="t-menu is-open is-static" style="min-width:190px"><div class="t-menu__item"><svg class="t-ico t-ico--sm"><use href="#i-copy"/></svg><span>Nhân bản</span><span>Ctrl+D</span></div><div class="t-menu__item"><svg class="t-ico t-ico--sm"><use href="#i-scissors"/></svg><span>Cắt</span><span>S</span></div><div class="t-menu__sep"></div><div class="t-menu__item t-menu__item--danger"><svg class="t-ico t-ico--sm"><use href="#i-trash"/></svg><span>Xoá</span><span>Delete</span></div></div>
+          <div class="t-popover is-open is-static" style="min-width:150px;margin-top:8px;--arrow:30%"><div class="t-popover__item" role="option" aria-checked="true"><svg class="t-ico t-ico--sm"><use href="#i-check"/></svg>Rise</div><div class="t-popover__item" role="option" aria-checked="false"><svg class="t-ico t-ico--sm"><use href="#i-check"/></svg>Pop</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const root = document.documentElement;
+
+  /* chế độ + màu nhấn */
+  $$('[data-theme-set]').forEach(b => b.onclick = () => { root.dataset.theme = b.dataset.themeSet; $$('[data-theme-set]').forEach(x => x.setAttribute('aria-pressed', x === b)); });
+  $$('[data-accent-set]').forEach(s => s.onclick = () => { root.dataset.accent = s.dataset.accentSet; $$('[data-accent-set]').forEach(x => x.setAttribute('aria-selected', x === s)); });
+
+  /* tabs */
+  $$('#sideTabs [role=tab]').forEach(t => t.onclick = () => {
+    $$('#sideTabs [role=tab]').forEach(x => x.setAttribute('aria-selected', x === t));
+    $$('.t-panel--side > .t-pane').forEach(p => p.classList.toggle('is-active', p.id === 'pane-' + t.dataset.pane));
+  });
+  $$('#libTabs [role=tab]').forEach(t => t.onclick = () => {
+    $$('#libTabs [role=tab]').forEach(x => x.setAttribute('aria-selected', x === t));
+    $$('[data-sub-pane]').forEach(p => p.hidden = p.dataset.subPane !== t.dataset.sub);
+  });
+  /* segmented / chọn thẻ / pressed */
+  $$('.t-seg').forEach(g => g.addEventListener('click', e => { const b = e.target.closest('button'); if (!b || g.id === 'themeSeg' || g.id === 'arSeg') return; $$('button', g).forEach(x => x.setAttribute('aria-pressed', x === b)); }));
+  $$('.t-preset').forEach(c => c.onclick = () => { if (c.closest('[data-sub-pane=preset]')) $$('.t-preset', c.parentNode).forEach(x => x.setAttribute('aria-selected', x === c)); });
+  $$('.t-tile').forEach(c => c.onclick = () => c.classList.toggle('is-on'));
+  $$('.t-sfx__play').forEach(b => b.onclick = e => { e.stopPropagation(); const row = b.closest('.t-sfx'); const on = !row.classList.contains('is-playing'); $$('.t-sfx.is-playing').forEach(x => { x.classList.remove('is-playing'); $('use', x.querySelector('.t-sfx__play')).setAttribute('href', '#i-play'); }); if (on) { row.classList.add('is-playing'); $('use', b).setAttribute('href', '#i-pause'); } });
+  $$('.t-seg button, .t-tbtn:not(.t-tbtn--mute):not(.t-tbtn--solo)').forEach(() => {});
+  $$('.t-tbtn').forEach(b => b.onclick = () => b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'));
+  $$('.t-dots i').forEach(d => d.onclick = e => { e.stopPropagation(); $$('i', d.parentNode).forEach(x => x.classList.toggle('is-active', x === d)); });
+  /* slider fill */
+  $$('.t-slider').forEach(s => { const f = () => s.style.setProperty('--p', ((s.value - s.min) / (s.max - s.min) * 100) + '%'); s.addEventListener('input', f); });
+  /* play */
+  let playing = false; $('#btnPlay').onclick = () => { playing = !playing; $('#playUse').setAttribute('href', playing ? '#i-pause' : '#i-play'); };
+
+  /* toast */
+  function toast(txt) { const t = $('#toast'); $('#toastTxt').textContent = txt; t.classList.remove('is-show'); void t.offsetWidth; t.classList.add('is-show'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('is-show'), 2200); }
+  $('#btnSave').onclick = () => { const c = $('#saveChip'); c.className = 't-chip t-chip--dirty'; c.textContent = 'Đang lưu…'; setTimeout(() => { c.className = 't-chip t-chip--ok'; c.textContent = 'Đã lưu'; toast('Đã lưu'); }, 500); };
+  setTimeout(() => $('#toast').classList.remove('is-show'), 4200);
+
+  /* tỉ lệ khung + lưới an toàn */
+  $$('[data-ar-set]').forEach(b => b.onclick = () => { $('#canvas').dataset.ar = b.dataset.arSet; $$('[data-ar-set]').forEach(x => x.setAttribute('aria-pressed', x === b)); });
+  const gridOn = () => { const on = $$('[data-grid]').filter(x => x.getAttribute('aria-checked') === 'true').map(x => x.dataset.grid); $('#safeGrid').classList.toggle('is-on', on.length > 0); $('#btnGrid').setAttribute('aria-pressed', on.length > 0); $('#btnGrid').classList.toggle('is-on', on.length > 0); ['title', 'action', 'thirds'].forEach(k => $('.t-safegrid__' + k).style.display = on.includes(k) ? '' : 'none'); };
+  $$('[data-grid]').forEach(i => i.onclick = e => { e.stopPropagation(); i.setAttribute('aria-checked', i.getAttribute('aria-checked') !== 'true'); gridOn(); });
+  gridOn();
+  /* popover + menu + sheet */
+  const pop = $('#platPop'); $('#btnGrid').onclick = e => { e.stopPropagation(); pop.classList.toggle('is-open'); };
+  const ctx = $('#ctx'); const closeAll = () => { pop.classList.remove('is-open'); ctx.classList.remove('is-open'); };
+  $('#tlInner').addEventListener('contextmenu', e => { e.preventDefault(); ctx.style.left = Math.min(e.clientX, innerWidth - 230) + 'px'; ctx.style.top = Math.min(e.clientY, innerHeight - 200) + 'px'; ctx.classList.add('is-open'); });
+  document.addEventListener('click', closeAll);
+  $('#btnGallery').onclick = () => $('#sheet').classList.add('is-open'); $('#sheetClose').onclick = () => $('#sheet').classList.remove('is-open');
+  $('#sheet').onclick = e => { if (e.target.id === 'sheet') e.target.classList.remove('is-open'); };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAll(); $('#sheet').classList.remove('is-open'); } });
+  if (location.hash.includes('light')) root.dataset.theme = 'light'; if (location.hash.includes('gold')) root.dataset.accent = 'gold';
+  if (location.hash.includes('gallery')) $('#sheet').classList.add('is-open');
+  if (location.hash.includes('ctx')) { ctx.style.left = '640px'; ctx.style.top = '560px'; ctx.classList.add('is-open'); }
+  if (location.hash.includes('pop')) pop.classList.add('is-open');
+  if (location.hash.includes('45')) $('[data-ar-set="4:5"]').click();
+  if (location.hash.includes('safe')) { $$('[data-grid]').forEach(i => i.setAttribute('aria-checked', 'true')); gridOn(); }
+  if (location.hash.includes('drag')) $('#dragTip').style.display = 'block';
+  $('#dragTip').style.display = 'block';
+
+  /* ===== dữ liệu giả: ruler, phụ đề, SFX, waveform, filmstrip ===== */
+  const NS = 'http://www.w3.org/2000/svg';
+  const rl = $('#rulerLane');
+  for (let s = 0; s <= 34; s++) { const t = document.createElement('div'); const major = s % 2 === 0; t.className = 't-tick' + (major ? ' t-tick--major' : ''); t.style.left = `calc(${s} * var(--pps))`; if (major) t.innerHTML = `<span class="t-tick__t">${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}</span>`; rl.appendChild(t); }
+  const rng = seed => () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const subs = [[.4, 2.7, 'Chào các bạn, hôm nay mình…'], [3, 5.2, 'Vì sao video bị chê khó xem'], [5.5, 7.8, 'Câu trả lời nằm ở 3 giây đầu'], [8.1, 11.2, 'Quy tắc đầu tiên là gì?'], [11.6, 14.8, 'Đồng thời, hãy nhớ quy tắc 3 giây'], [15.1, 18.3, 'Cứ 3 giây, đổi một nhịp'], [18.6, 21.4, 'Ví dụ như video này'], [21.7, 24.9, 'Chữ hiện đúng lúc nói'], [25.2, 28.3, 'Và âm thanh đi kèm'], [28.6, 31.2, 'Đăng ký để xem thêm'], [31.5, 33.7, 'Hẹn gặp lại!']];
+  subs.forEach(([a, b, t]) => { const c = document.createElement('div'); c.className = 't-clip t-clip--subtitle' + (a === 11.6 ? ' is-selected' : ''); c.style.left = `calc(${a} * var(--pps))`; c.style.width = `calc(${(b - a).toFixed(2)} * var(--pps) - 2px)`; c.innerHTML = `<span class="t-clip__label">${t}</span>` + (a === 11.6 ? '<i class="t-clip__edge t-clip__edge--l"></i><i class="t-clip__edge t-clip__edge--r"></i>' : ''); $('#subLane').appendChild(c); });
+  const sfx = [[1.9, 1.1, 'whoosh'], [9.6, .5, 'pop'], [11.5, .5, ''], [14.4, 1.2, 'ding'], [18, 1.2, 'whoosh'], [22.5, .9, 'stamp'], [26.8, 2, 'riser'], [29.4, 1.1, 'whoosh']];
+  sfx.forEach(([a, d, n], i) => { const c = document.createElement('div'); c.className = 't-clip t-clip--audio t-clip--sfx'; c.style.left = `calc(${a} * var(--pps))`; c.style.width = `calc(${d} * var(--pps) - 1px)`; c.innerHTML = `<svg class="t-wave" viewBox="0 0 100 20" preserveAspectRatio="none" data-w="${100 + i}"></svg>` + (d * 30 > 44 && n ? `<span class="t-clip__label" style="position:absolute;left:5px;top:2px;z-index:3">${n}</span>` : ''); $('#sfxLane').appendChild(c); });
+  /* waveform */
+  function wave(svg, seed, W, H, amp) { const r = rng(seed); const n = W; const top = [], bot = []; for (let i = 0; i <= n; i++) { const x = i / n * W; const v = Math.min(1, amp(i / n, r) ); const a = Math.max(.6, v * H / 2); top.push(`${x.toFixed(1)},${(H / 2 - a).toFixed(1)}`); bot.unshift(`${x.toFixed(1)},${(H / 2 + a).toFixed(1)}`); } svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('preserveAspectRatio', 'none'); svg.innerHTML = `<polygon points="${top.concat(bot).join(' ')}"/>`; }
+  $$('.t-sfx .t-sfx__wave').forEach(el => { el.innerHTML = '<svg class="t-wave"></svg>'; const sd = +el.dataset.wave; wave($('svg', el), sd, 60, 22, (p, r) => (Math.sin(p * 9 + sd) * .25 + .35 + r() * .4) * (p < .12 ? p / .12 : 1) * (1 - p * .55)); });
+  $$('.t-clip--sfx svg.t-wave').forEach(s => { const sd = +s.dataset.w; wave(s, sd, 100, 20, (p, r) => (.35 + r() * .55) * (1 - p * .6) * (p < .08 ? p / .08 : 1)); });
+  const gaps = [[7.6, 9.6], [18.8, 20.2], [27.5, 28.6], [31.4, 32.4]];
+  const v = $('#voiceClip'); const vs = document.createElementNS(NS, 'svg'); vs.setAttribute('class', 't-wave'); v.prepend(vs);
+  wave(vs, 7, 1020, 38, (p, r) => { const t = p * 34; if (gaps.some(g => t > g[0] && t < g[1])) return .06 + r() * .06; return (.18 + Math.abs(Math.sin(t * 5.3)) * .5 + r() * .32) * (.7 + .3 * Math.sin(t * 1.7)); });
+  vs.style.padding = '8px 0 0';
+  const m = $('#musicClip'); const ms = document.createElementNS(NS, 'svg'); ms.setAttribute('class', 't-wave'); m.prepend(ms);
+  wave(ms, 3, 1020, 42, (p, r) => .42 + Math.sin(p * 120) * .1 + r() * .22);
+  ms.style.opacity = .55;
+  /* đường gain ducking: điểm [giây, % chiều cao] */
+  const pts = [[0, 30], [1.2, 30], [1.8, 64], [7.6, 64], [8.1, 32], [9.4, 32], [9.9, 64], [18.6, 64], [19.1, 34], [20, 34], [20.5, 64], [27.4, 64], [27.9, 36], [28.6, 36], [29.1, 64], [30.6, 64], [31.2, 30], [34, 30]];
+  const W = 1020, H = 42, X = t => t / 34 * W, Y = p => p / 100 * H;
+  const d = pts.map(([t, p], i) => (i ? 'L' : 'M') + X(t).toFixed(1) + ' ' + Y(p).toFixed(1)).join(' ');
+  const ds = document.createElementNS(NS, 'svg'); ds.setAttribute('class', 't-duck'); ds.setAttribute('viewBox', `0 0 ${W} ${H}`); ds.setAttribute('preserveAspectRatio', 'none');
+  ds.innerHTML = `<path class="fill" d="${d} L${W} 0 L0 0Z"/><path class="line" d="${d}"/>` + pts.filter((_, i) => i % 2 === 1).map(([t, p]) => `<ellipse class="pt" cx="${X(t).toFixed(1)}" cy="${Y(p).toFixed(1)}" rx="3" ry="3"/>`).join('');
+  m.appendChild(ds);
+  /* filmstrip */
+  const th = $('#thumbs'); const hues = [205, 210, 200, 215, 208, 198];
+  for (let i = 0; i < 46; i++) { const e = document.createElement('i'); const h = hues[i % 6], l = 24 + (i * 7 % 9); e.style.width = '20.5px'; e.style.background = `radial-gradient(circle at 50% 34%, hsl(24 38% ${50 + (i % 3) * 3}%) 0 17%, transparent 18%), radial-gradient(ellipse at 50% 100%, hsl(215 18% 20%) 0 42%, transparent 43%), linear-gradient(160deg, hsl(${h} 30% ${l + 10}%), hsl(${h + 6} 36% ${l - 6}%))`; th.appendChild(e); }
+})();
+</script>
+</body>
+</html>

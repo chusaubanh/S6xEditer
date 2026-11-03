@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><title>parity</title>
+<style>html,body{margin:0;padding:0;background:transparent;overflow:hidden}#ov{position:absolute;left:0;top:0}</style></head>
+<body><div id="ov"></div>
+<script type="module">
+// Trang chụp overlay thuần (không video) bằng đúng overlay-runtime của editor; dùng cho scripts/editor/parity-check.ts.
+import { mountOverlay } from "./overlay-runtime.js";
+const t = parseFloat(new URLSearchParams(location.search).get("t")) || 0;
+const project = await (await fetch("/api/project")).json();
+const el = document.getElementById("ov");
+el.style.width = project.width + "px"; el.style.height = project.height + "px";
+const ov = mountOverlay(el, project, { assetBase: "/", canvasW: project.width, canvasH: project.height });
+await ov.ready();
+ov.seek(t);
+// Số đo bố cục chữ cho parity-check: căn giữa có đối xứng quanh tâm layer không, khoảng cách giữa các từ (em)
+const metrics = [];
+for (const w of document.querySelectorAll("[data-layer-id]")) {
+  if (w.style.display === "none" || !["subtitle", "text", "callout", "lowerThird"].includes(w.dataset.type)) continue;
+  const lay = project.tracks.flatMap((t) => t.layers).find((l) => l.id === w.dataset.layerId);
+  const L = w.getBoundingClientRect();
+  const spans = [...w.querySelectorAll("span")].filter((s) => !s.closest("[aria-hidden]"));
+  if (!spans.length) continue;
+  const fs = parseFloat(getComputedStyle(spans[0]).fontSize);
+  const lines = new Map(); // gom span theo dòng bằng tâm dọc (từ đang nói bị phóng 1.06 nên top lệch vài px)
+  const rects = spans.map((s) => s.getBoundingClientRect()).sort((x, y) => x.top + x.height / 2 - (y.top + y.height / 2));
+  let key = -1, lastCy = -1e9;
+  for (const r of rects) { const cy = r.top + r.height / 2; if (cy - lastCy > fs * 0.5) key++; lastCy = cy; (lines.get(key) || lines.set(key, []).get(key)).push(r); }
+  let maxOff = 0, minGap = Infinity, maxGap = 0;
+  for (const rs of lines.values()) {
+    rs.sort((a, b) => a.left - b.left);
+    const c = (rs[0].left + rs[rs.length - 1].right) / 2;
+    maxOff = Math.max(maxOff, Math.abs(c - (L.left + L.width / 2)) / L.width);
+    for (let i = 1; i < rs.length; i++) { const gp = (rs[i].left - rs[i - 1].right) / fs; minGap = Math.min(minGap, gp); maxGap = Math.max(maxGap, gp); }
+  }
+  metrics.push({ id: lay.id, align: lay.style.align, centerOffsetPct: +(maxOff * 100).toFixed(2), minWordGapEm: minGap === Infinity ? null : +minGap.toFixed(3), maxWordGapEm: +maxGap.toFixed(3) });
+}
+const pre = document.createElement("pre"); pre.id = "metrics"; pre.textContent = JSON.stringify(metrics); document.body.appendChild(pre);
+document.title = "ready";
+</script></body></html>

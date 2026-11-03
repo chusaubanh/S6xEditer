@@ -1,0 +1,161 @@
+/* ==========================================================================
+   S6X Editor — Tahoe design system (Liquid Glass)  ·  tahoe.css
+   Tokens + vật liệu kính + nền. Không chứa thành phần (xem components.css).
+   Màu dùng light-dark() + color-scheme: một bộ token cho cả Sáng/Tối.
+     [data-theme="dark"|"light"]  — ép chế độ; bỏ attribute = theo hệ thống
+     [data-accent="blue"|"gold"]  — màu nhấn (mặc định blue)
+   ========================================================================== */
+
+/* Font cục bộ. Đường dẫn tương đối chạy được cả file:// (mockup) lẫn http
+   (server editor: /design/ → ../../../../assets/ bị kẹp về /assets/ đã được serve). */
+@font-face{font-family:"Be Vietnam Pro";font-weight:400;font-style:normal;font-display:swap;src:url("../../../../assets/fonts/BeVietnamPro-Regular.ttf") format("truetype")}
+@font-face{font-family:"Be Vietnam Pro";font-weight:600;font-style:normal;font-display:swap;src:url("../../../../assets/fonts/BeVietnamPro-SemiBold.ttf") format("truetype")}
+@font-face{font-family:"Be Vietnam Pro";font-weight:700;font-style:normal;font-display:swap;src:url("../../../../assets/fonts/BeVietnamPro-Bold.ttf") format("truetype")}
+@font-face{font-family:"Be Vietnam Pro";font-weight:800;font-style:normal;font-display:swap;src:url("../../../../assets/fonts/BeVietnamPro-ExtraBold.ttf") format("truetype")}
+
+:root{
+  color-scheme: light dark;
+
+  /* ---- Chữ ---------------------------------------------------------------- */
+  --font-ui: "Be Vietnam Pro", -apple-system, "SF Pro Text", system-ui, "Segoe UI", sans-serif;
+  --fs-11:11px; --fs-12:12px; --fs-13:13px; --fs-15:15px; --fs-17:17px; --fs-22:22px; --fs-28:28px;
+  --fw-regular:400; --fw-medium:600; --fw-bold:700; --fw-heavy:800;   /* Be Vietnam Pro không có 500 → "medium" = 600 */
+  --ls-body:-.006em; --ls-title:-.02em; --ls-caps:.05em;
+  --lh-tight:1.2; --lh-body:1.4;
+
+  /* ---- Nhãn (text) -------------------------------------------------------- */
+  --label:   light-dark(rgba(14,18,28,.92), rgba(255,255,255,.94));   /* ≥ 7:1 */
+  --label-2: light-dark(rgba(14,18,28,.68), rgba(255,255,255,.70));   /* ≥ 4.5:1 trên kính */
+  --label-3: light-dark(rgba(14,18,28,.46), rgba(255,255,255,.48));   /* chỉ placeholder/vô hiệu hoá */
+  --label-inv: light-dark(#fff, #0b0c10);
+
+  /* ---- Màu nhấn (xanh hệ thống mặc định) --------------------------------- */
+  --accent:      #0A84FF;                                   /* nét, thanh, viền chọn */
+  --accent-fill: #0071E3;                                   /* nền nút (trắng trên nó ≥ 4.5:1) */
+  --accent-fill-hover: #0A84FF;
+  --accent-on:   #fff;                                      /* chữ trên nền nhấn */
+  --accent-text: light-dark(#0062C9, #62B3FF);              /* chữ nhấn trên kính */
+  --accent-soft: color-mix(in srgb, var(--accent) 20%, transparent);
+  --accent-line: color-mix(in srgb, var(--accent) 80%, transparent);
+  --danger:  light-dark(#D70015, #FF6961);
+  --danger-fill: #D92D20;
+  --warn:    light-dark(#B25E00, #FFB340);
+  --ok:      light-dark(#1A7F37, #4CD964);
+
+  /* ---- Fill điều khiển + đường kẻ ---------------------------------------- */
+  --fill-1: light-dark(rgba(40,56,90,.09), rgba(255,255,255,.08));
+  --fill-2: light-dark(rgba(40,56,90,.15), rgba(255,255,255,.13));
+  --fill-3: light-dark(rgba(40,56,90,.22), rgba(255,255,255,.20));
+  --sep:    light-dark(rgba(20,36,70,.13), rgba(255,255,255,.10));
+  --track:  light-dark(rgba(40,56,90,.18), rgba(255,255,255,.18));  /* rãnh slider/switch tắt */
+
+  /* ---- Vật liệu kính 4 cấp ------------------------------------------------
+     nền rgba + backdrop-filter. "-solid" dùng khi thiếu backdrop-filter hoặc
+     người dùng bật prefers-reduced-transparency.                              */
+  --mat-1: light-dark(rgba(255,255,255,.30), rgba(46,50,62,.38));   /* ultraThin */
+  --mat-2: light-dark(rgba(255,255,255,.44), rgba(38,42,53,.54));   /* thin      */
+  --mat-3: light-dark(rgba(255,255,255,.60), rgba(30,33,42,.68));   /* regular   */
+  --mat-4: light-dark(rgba(255,255,255,.80), rgba(24,26,33,.84));   /* thick     */
+  --mat-1-solid: light-dark(#dbe7f7, #2c303b);
+  --mat-2-solid: light-dark(#e3ecf8, #272a34);
+  --mat-3-solid: light-dark(#eef3fb, #20232b);
+  --mat-4-solid: light-dark(#f7f9fd, #1a1c23);
+  --blur-1: blur(20px) saturate(150%);
+  --blur-2: blur(28px) saturate(160%);
+  --blur-3: blur(40px) saturate(170%);
+  --blur-4: blur(60px) saturate(180%);
+
+  /* ---- Viền specular (ánh sáng mảnh 1px phía trên + vành) ---------------- */
+  --edge:     light-dark(rgba(255,255,255,.70), rgba(255,255,255,.14));
+  --edge-top: light-dark(rgba(255,255,255,.95), rgba(255,255,255,.26));
+  --edge-out: light-dark(rgba(20,50,100,.16),  rgba(0,0,0,.55));     /* hairline ngoài, tách kính khỏi nền */
+  --sheen:    linear-gradient(135deg, light-dark(rgba(255,255,255,.55), rgba(255,255,255,.10)) 0%, transparent 38%);
+  --spec: inset 0 1px 0 var(--edge-top), inset 0 0 0 1px var(--edge);
+
+  /* ---- Bóng nhiều lớp, mềm ---------------------------------------------- */
+  --shadow-1: 0 0 0 .5px var(--edge-out), 0 1px 2px rgba(10,20,50,.10), 0 2px 8px rgba(10,20,50,.08);
+  --shadow-2: 0 0 0 .5px var(--edge-out), 0 2px 4px rgba(10,20,50,.10), 0 10px 28px rgba(10,20,50,.16);
+  --shadow-3: 0 0 0 .5px var(--edge-out), 0 4px 8px rgba(10,20,50,.12), 0 18px 48px rgba(10,20,50,.24);
+  --shadow-win: 0 0 0 .5px var(--edge-out), 0 6px 14px rgba(5,15,40,.18), 0 28px 80px rgba(5,15,40,.38);
+
+  /* ---- Bán kính đồng tâm: window 26 − gutter 6 = panel 20 − pad 8 = control 12 */
+  --r-window:26px; --r-panel:20px; --r-card:16px; --r-control:12px; --r-small:8px; --r-clip:6px; --r-pill:999px;
+  --gutter:6px;
+
+  /* ---- Khoảng cách lưới 4/8 --------------------------------------------- */
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:20px; --s-6:24px; --s-8:32px;
+  --control-h:28px; --control-h-lg:34px; --control-h-sm:22px;
+
+  /* ---- Chuyển động ------------------------------------------------------- */
+  --ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --ease-out:    cubic-bezier(.22,1,.36,1);
+  --ease-inout:  cubic-bezier(.65,0,.35,1);
+  --dur-1:160ms; --dur-2:240ms; --dur-3:320ms;
+
+  /* ---- Focus ring kiểu macOS: vành 3px màu nhấn ~50% -------------------- */
+  --ring-color: color-mix(in srgb, var(--accent) 55%, transparent);
+
+  /* ---- Màu clip timeline (hue gốc → nền/viền/chữ suy ra trong components) */
+  --hue-video:#8C98AD; --hue-graphic:#9585E0; --hue-title:#3E8BFF; --hue-subtitle:#E6C441; --hue-audio:#2FB85B; --hue-music:#27B5A6;
+
+  /* ---- Nền (hình nền Tahoe vẽ bằng CSS) ---------------------------------- */
+  --wall:
+    radial-gradient(70% 55% at 12% -5%, light-dark(#f4e3bd, #20407a) 0%, transparent 60%),
+    radial-gradient(60% 70% at 95% 15%, light-dark(#7fb0f2, #1a5fd0) 0%, transparent 62%),
+    radial-gradient(80% 60% at 40% 110%, light-dark(#1f5fd0, #061a47) 0%, transparent 70%),
+    linear-gradient(165deg, light-dark(#b9d1f3, #0f1c38) 0%, light-dark(#5b93e6, #123066) 46%, light-dark(#2160cf, #0a2d73) 78%, light-dark(#143f95, #061436) 100%);
+}
+
+/* Chế độ: mặc định theo hệ thống; ép bằng [data-theme] */
+:root[data-theme="dark"]{color-scheme:dark}
+:root[data-theme="light"]{color-scheme:light}
+
+/* Màu nhấn S6X Gold */
+:root[data-accent="gold"]{
+  --accent:#C5A059; --accent-fill:#C5A059; --accent-fill-hover:#D4B26A; --accent-on:#1C1507;
+  --accent-text: light-dark(#7A5612, #E3C98C);
+  --accent-soft: color-mix(in srgb, #C5A059 24%, transparent);
+}
+
+/* ---- Vật liệu dùng chung (class tiện ích) ------------------------------- */
+.t-glass-1,.t-glass-2,.t-glass-3,.t-glass-4{position:relative;box-shadow:var(--spec),var(--shadow-1)}
+.t-glass-1{background:var(--mat-1);-webkit-backdrop-filter:var(--blur-1);backdrop-filter:var(--blur-1)}
+.t-glass-2{background:var(--mat-2);-webkit-backdrop-filter:var(--blur-2);backdrop-filter:var(--blur-2)}
+.t-glass-3{background:var(--mat-3);-webkit-backdrop-filter:var(--blur-3);backdrop-filter:var(--blur-3)}
+.t-glass-4{background:var(--mat-4);-webkit-backdrop-filter:var(--blur-4);backdrop-filter:var(--blur-4);box-shadow:var(--spec),var(--shadow-2)}
+/* ánh sheen góc trên-trái (không chặn chuột) */
+.t-glass-2::before,.t-glass-3::before,.t-glass-4::before{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--sheen);pointer-events:none}
+
+/* ---- Nền hình nền ------------------------------------------------------- */
+.t-wallpaper{background:var(--wall);background-attachment:fixed}
+
+/* ---- Cơ sở -------------------------------------------------------------- */
+.t-root{font:var(--fw-regular) var(--fs-13)/var(--lh-body) var(--font-ui);letter-spacing:var(--ls-body);color:var(--label);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-feature-settings:"tnum" 0}
+.t-root *,.t-root *::before,.t-root *::after{box-sizing:border-box}
+.t-num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.t-root :focus{outline:none}
+.t-root :focus-visible{outline:3px solid var(--ring-color);outline-offset:1px}
+.t-root ::selection{background:var(--accent-soft)}
+.t-root{scrollbar-width:thin;scrollbar-color:var(--fill-3) transparent}
+.t-root *{scrollbar-width:thin;scrollbar-color:var(--fill-3) transparent}
+
+/* ---- Fallback: không có backdrop-filter → nền đặc ---------------------- */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  :root{--mat-1:var(--mat-1-solid);--mat-2:var(--mat-2-solid);--mat-3:var(--mat-3-solid);--mat-4:var(--mat-4-solid);
+    --blur-1:none;--blur-2:none;--blur-3:none;--blur-4:none}
+}
+/* ---- Giảm trong suốt → nền đặc, bỏ blur --------------------------------- */
+@media (prefers-reduced-transparency:reduce){
+  :root{--mat-1:var(--mat-1-solid);--mat-2:var(--mat-2-solid);--mat-3:var(--mat-3-solid);--mat-4:var(--mat-4-solid);
+    --blur-1:none;--blur-2:none;--blur-3:none;--blur-4:none;--sheen:none}
+}
+/* ---- Giảm chuyển động --------------------------------------------------- */
+@media (prefers-reduced-motion:reduce){
+  :root{--dur-1:1ms;--dur-2:1ms;--dur-3:1ms;--ease-spring:linear}
+  .t-root *,.t-root *::before,.t-root *::after{animation-duration:1ms!important;animation-iteration-count:1!important;transition-duration:1ms!important;scroll-behavior:auto!important}
+}
+/* ---- Tương phản cao ----------------------------------------------------- */
+@media (prefers-contrast:more){
+  :root{--edge:light-dark(rgba(0,0,0,.45),rgba(255,255,255,.45));--sep:light-dark(rgba(0,0,0,.35),rgba(255,255,255,.35));--label-2:var(--label)}
+}

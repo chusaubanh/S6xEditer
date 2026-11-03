@@ -1,0 +1,13 @@
+node_modules/
+.venv*/
+output/
+models/
+public/jobs/
+.env
+.env.local
+__pycache__/
+.remotion/
+/*.mp3
+input/**/*.mp4
+input/**/*.mov
+input/**/*.wav

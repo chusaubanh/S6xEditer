@@ -1,0 +1,464 @@
+/**
+ * Công cụ dựng độc lập cho bản "Hướng dẫn gỡ băng" (Bản dựng riêng):
+ * - Giọng đọc duy nhất Hải Đăng (VieNeu-TTS), speed: 1.0, nhịp tự nhiên chậm rãi.
+ * - Chuẩn tỉ lệ 16:9 tuyệt đối cho mọi vùng crop/zoom (loại bỏ hoàn toàn lỗi bè ngang).
+ * - Tốc độ nhịp đào tạo: giữ 1.0x thao tác tay, chỉ tua tối đa 2.0x ở tiến trình AI, giữ khung cuối tpad clone.
+ * - Callout Badges Net-Sense (SeeCut) & Phụ đề nảy vàng S6X (#C5A059).
+ * - Tự động đồng bộ chuẩn âm thanh 48kHz stereo cho cả Intro và Screencast.
+ *
+ * Cách chạy:
+ *   npx tsx scripts/screencast/screencast-rieng.ts "output/Huong-dan-transcript-rieng/screencast.json" [--stills] [--render all] [--concat]
+ */
+import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { basename, dirname, join, resolve } from "node:path";
+import { loadConfig } from "../../src/studio/foundation/config.js";
+import { VieNeuClient } from "../../src/studio/tts/vieneu-client.js";
+import { getDurationSec } from "../../src/studio/audio/audio-tools.js";
+import { applyNarrationReplacements } from "../../src/studio/brand/brand-config.js";
+import { runMediaCommand } from "../../src/studio/media/media-runner.js";
+import { resolveMediaBinary } from "../../src/studio/utils/media-binary.js";
+import { gpuEncodeAvailable } from "../../src/studio/render/video-tools.js";
+
+const PAD_SEC = 0.8; // Đệm nghỉ rộng rãi, chậm rãi cho video đào tạo
+const MAX_SPEED = 2.0; // Tối đa 2.0x (nhịp đào tạo, không tua vội 16x)
+const OUT_W = 1920, OUT_H = 1080, OUT_FPS = 30;
+const GOLD_ASS = "&H0059A0C5&"; // #C5A059 (Gold Hoàng Gia S6X theo BGR)
+const FONTS_DIR = "assets/fonts"; // Be Vietnam Pro
+const BLUR_PAD = 10;
+const SRC_W = 1918, SRC_H = 1078;
+
+interface Callout {
+  text: string;
+  pos?: "top-left" | "top-right" | "top-center" | "bottom-left" | "bottom-right";
+}
+
+interface Crop {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+interface Segment {
+  id: string;
+  clip: string;
+  in: number;
+  out: number;
+  text: string;
+  blurModelLabel?: boolean;
+  subPos?: "top" | "bottom";
+  crop?: Crop;
+  callout?: Callout;
+  note?: string;
+  maxSpeed?: number;
+  fastForward?: boolean;
+}
+
+interface Cfg {
+  title: string;
+  voice: { preset: string; style: "tu_nhien" | "tin_tuc" | "doc_truyen"; speed?: number };
+  sourceDir: string;
+  clips: Record<string, string>;
+  intro?: { scenes?: { id: string; role?: string; voiceSegments: string[] }[] };
+  segments: Segment[];
+}
+
+interface Box { t0: number; t1: number; x: number; y: number; w: number; h: number }
+interface Word { w: string; t0: number; t1: number }
+interface Manifest {
+  id: string; clip: string; in: number; out: number; speed: number;
+  audioSec: number; durSec: number; tpadSec: number; subPos: string;
+  blur: boolean; text: string; audio: string; ass: string;
+  crop?: Crop; callout?: Callout;
+}
+
+const args = process.argv.slice(2);
+const cfgPath = resolve(args.find((a) => !a.startsWith("--")) ?? "");
+const flag = (n: string) => args.includes(`--${n}`);
+const opt = (n: string) => {
+  const i = args.indexOf(`--${n}`);
+  return i >= 0 && args[i + 1] && !args[i + 1].startsWith("--") ? args[i + 1] : undefined;
+};
+
+if (!existsSync(cfgPath)) {
+  console.error('Dùng: npx tsx scripts/screencast/screencast-rieng.ts "<screencast.json>" [--stills] [--render all] [--concat]');
+  process.exit(1);
+}
+
+const cfg: Cfg = JSON.parse(readFileSync(cfgPath, "utf8"));
+const docDir = dirname(cfgPath);
+const workDir = join(docDir, "build-screencast");
+mkdirSync(join(workDir, "tts"), { recursive: true });
+mkdirSync(join(workDir, "ass"), { recursive: true });
+
+const only = opt("only")?.split(",");
+const segs = cfg.segments.filter((s) => !only || only.includes(s.id));
+
+// Khởi tạo VieNeu client đồng bộ 100%
+const client = new VieNeuClient({
+  endpoint: loadConfig().vieneuEndpoint,
+  voice: cfg.voice.preset || "Hải Đăng",
+  style: cfg.voice.style || "tu_nhien",
+  speed: cfg.voice.speed ?? 1.0,
+});
+const ffmpeg = resolveMediaBinary("ffmpeg");
+
+/* ── TTS có cache ─────────────────────────────────────────────────────────── */
+async function tts(text: string): Promise<string> {
+  const spoken = applyNarrationReplacements(text);
+  const hash = createHash("sha1").update(`${client.cacheIdentity}|speed${cfg.voice.speed ?? 1.0}|${spoken}`).digest("hex").slice(0, 16);
+  const file = join(workDir, "tts", `${hash}.mp3`);
+  if (!existsSync(file)) {
+    console.log(`[TTS] Đang sinh giọng: "${spoken.slice(0, 40)}..."`);
+    await client.generate(spoken, file);
+  }
+  return file;
+}
+
+/** Đo đoạn có tiếng nói thật (bỏ khoảng lặng đầu/cuối) */
+function speechSpan(file: string, total: number): [number, number] {
+  const r = spawnSync(ffmpeg, ["-hide_banner", "-i", file, "-af", "silencedetect=n=-38dB:d=0.1", "-f", "null", "-"], { encoding: "utf8" });
+  const log = r.stderr || "";
+  let start = 0, end = total;
+  const first = /silence_start: (-?[\d.]+)[\s\S]*?silence_end: ([\d.]+)/.exec(log);
+  if (first && Number(first[1]) <= 0.05) start = Number(first[2]);
+  const starts = [...log.matchAll(/silence_start: ([\d.]+)/g)].map((m) => Number(m[1]));
+  const lastStart = starts[starts.length - 1];
+  if (lastStart !== undefined && lastStart > total - 0.8 && lastStart > start) end = lastStart;
+  return [start, end];
+}
+
+/* ── Phụ đề & Callout ASS ─────────────────────────────────────────────────── */
+const weight = (tok: string) => {
+  const core = tok.replace(/[.,:;?!…]+$/g, "");
+  const base = /^[A-Za-z0-9]+$/.test(core) && core.length > 4 ? Math.ceil(core.length / 3) : 1;
+  return base + (/[.?!…]$/.test(tok) ? 1.0 : /[,:;]$/.test(tok) ? 0.5 : 0);
+};
+
+function blocks(text: string): string[][] {
+  const clauses = (text.match(/[^.,:;?!…]+[.,:;?!…]*/g) ?? [text]).map((c) => c.trim().split(/\s+/).filter(Boolean)).filter((c) => c.length);
+  const out: string[][] = [];
+  for (const c of clauses) {
+    const n = Math.ceil(c.length / 8), size = Math.ceil(c.length / n);
+    for (let i = 0; i < c.length; i += size) out.push(c.slice(i, i + size));
+  }
+  const merged: string[][] = [];
+  for (const b of out) {
+    const prev = merged[merged.length - 1];
+    if (prev && b.length <= 2 && prev.length + b.length <= 8 && !/[.?!…]$/.test(prev[prev.length - 1])) prev.push(...b); else merged.push(b);
+  }
+  return merged;
+}
+
+function wordTimes(text: string, span: [number, number]): Word[][] {
+  const bl = blocks(text);
+  const toks = bl.flat();
+  const total = toks.reduce((s, t) => s + weight(t), 0);
+  const per = (span[1] - span[0]) / total;
+  let t = span[0];
+  return bl.map((b) => b.map((tok) => { const w = { w: tok, t0: t, t1: t + weight(tok) * per }; t = w.t1; return w; }));
+}
+
+const assTime = (s: number) => {
+  const cs = Math.round(s * 100);
+  return `${Math.floor(cs / 360000)}:${String(Math.floor(cs / 6000) % 60).padStart(2, "0")}:${String(Math.floor(cs / 100) % 60).padStart(2, "0")}.${String(cs % 100).padStart(2, "0")}`;
+};
+
+function buildAss(
+  text: string,
+  span: [number, number],
+  durSec: number,
+  pos: "top" | "bottom",
+  callout?: Callout
+): string {
+  const style = (n: string, al: number, mv: number, box: boolean) =>
+    `Style: ${n},Be Vietnam Pro,62,&H00FFFFFF,&H00FFFFFF,${box ? "&H26000000,&H26000000" : "&H00141414,&H64000000"},-1,0,0,0,100,100,1.5,0,${box ? 3 : 1},${box ? 18 : 3},0,${al},120,120,${mv},1`;
+
+  // Net-Sense Callout Badge: nền than đen, viền vàng hoàng gia S6X, chữ trắng đậm
+  const calloutStyle = `Style: CalloutBadge,Be Vietnam Pro,38,&H00FFFFFF,&H00FFFFFF,${GOLD_ASS},&H26141517,-1,0,0,0,100,100,2,0,3,14,0,7,50,50,50,1`;
+
+  const lines = [
+    "[Script Info]",
+    "ScriptType: v4.00+",
+    `PlayResX: ${OUT_W}`,
+    `PlayResY: ${OUT_H}`,
+    "WrapStyle: 0",
+    "ScaledBorderAndShadow: yes",
+    "",
+    "[V4+ Styles]",
+    "Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding",
+    style("Bot", 2, 56, false),
+    style("Top", 8, 150, false),
+    style("BoxBot", 2, 56, true),
+    style("BoxTop", 8, 150, true),
+    calloutStyle,
+    "",
+    "[Events]",
+    "Format: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text",
+  ];
+
+  if (callout && callout.text) {
+    let calloutPos = "\\an9\\pos(1860,60)"; // top-right
+    if (callout.pos === "top-left") calloutPos = "\\an7\\pos(60,60)";
+    else if (callout.pos === "top-center") calloutPos = "\\an8\\pos(960,60)";
+    else if (callout.pos === "bottom-left") calloutPos = "\\an1\\pos(60,940)";
+    else if (callout.pos === "bottom-right") calloutPos = "\\an3\\pos(1860,940)";
+
+    const cStart = "0:00:00.15";
+    const cEnd = assTime(Math.max(0.3, durSec - 0.2));
+    const popAnim = "\\fscx80\\fscy80\\t(0,140,\\fscx108\\fscy108)\\t(140,240,\\fscx100\\fscy100)";
+    lines.push(`Dialogue: 3,${cStart},${cEnd},CalloutBadge,,0,0,0,,{${calloutPos}\\q2${popAnim}}${callout.text}`);
+  }
+
+  const place = pos === "top" ? "\\an8\\pos(960,150)" : "\\an2\\pos(960,1024)";
+  const boxPlace = pos === "top" ? "\\an8\\pos(960,158)" : "\\an2\\pos(960,1032)";
+  const bw = wordTimes(text, span);
+
+  bw.forEach((b, bi) => {
+    const bs = Math.max(0, b[0].t0 - 0.05);
+    const be = bi + 1 < bw.length ? Math.min(bw[bi + 1][0].t0, b[b.length - 1].t1 + 0.6) : Math.min(durSec, b[b.length - 1].t1 + 0.4);
+    lines.push(`Dialogue: 0,${assTime(bs)},${assTime(be)},${pos === "top" ? "BoxTop" : "BoxBot"},,0,0,0,,{${boxPlace}\\q2\\1a&HFF&}${b.map((x) => x.w).join(" ")}`);
+    const blockEnd = bi + 1 < bw.length ? Math.min(bw[bi + 1][0].t0, b[b.length - 1].t1 + 0.6) : Math.min(durSec, b[b.length - 1].t1 + 0.4);
+    b.forEach((word, wi) => {
+      const start = wi === 0 ? Math.max(0, word.t0 - 0.05) : word.t0;
+      const end = wi + 1 < b.length ? b[wi + 1].t0 : blockEnd;
+      const txt = b.map((x, i) => i === wi
+        ? `{\\1c${GOLD_ASS}\\fscx100\\fscy100\\t(0,60,\\fscx118\\fscy118)\\t(60,120,\\fscx100\\fscy100)}${x.w}{\\r}`
+        : x.w).join(" ");
+      lines.push(`Dialogue: 1,${assTime(start)},${assTime(end)},${pos === "top" ? "Top" : "Bot"},,0,0,0,,{${place}\\q2}${txt}`);
+    });
+  });
+
+  return lines.join("\n") + "\n";
+}
+
+/* ── Làm mờ nhãn model ───────────────────────────────────────────────────── */
+let blurAll: Record<string, Box[]> | null = null;
+function mergeBoxes(list: Box[]): Box[] {
+  const merged: Box[] = [];
+  for (const b of list) {
+    const prev = merged[merged.length - 1];
+    if (prev && b.t0 <= prev.t1 + 0.5 && Math.abs(b.x - prev.x) < 100 && Math.abs(b.y - prev.y) < 100) {
+      const minX = Math.min(prev.x, b.x);
+      const minY = Math.min(prev.y, b.y);
+      const maxX = Math.max(prev.x + prev.w, b.x + b.w);
+      const maxY = Math.max(prev.y + prev.h, b.y + b.h);
+      prev.x = minX;
+      prev.y = minY;
+      prev.w = maxX - minX;
+      prev.h = maxY - minY;
+      prev.t1 = Math.max(prev.t1, b.t1);
+    } else {
+      merged.push({ ...b });
+    }
+  }
+  return merged;
+}
+
+function boxesFor(s: Segment): Box[] {
+  if (!s.blurModelLabel) return [];
+  blurAll ??= JSON.parse(readFileSync(join(docDir, "blur-boxes.json"), "utf8"));
+  const raw = (blurAll![s.clip] ?? []).filter((b) => b.t1 > s.in && b.t0 < s.out);
+  return mergeBoxes(raw);
+}
+
+function blurChain(boxes: Box[], off: number, srcW: number, srcH: number): string {
+  if (!boxes.length) return "[0:v]null[bl]";
+  const ev = (n: number) => Math.max(2, Math.floor(n / 2) * 2);
+  const parts: string[] = [];
+  let cur = "[0:v]";
+  boxes.forEach((b, i) => {
+    const x = Math.max(0, ev(b.x - BLUR_PAD)), y = Math.max(0, ev(b.y - BLUR_PAD));
+    const w = Math.min(srcW - x, ev(b.w + 2 * BLUR_PAD)), h = Math.min(srcH - y, ev(b.h + 2 * BLUR_PAD));
+    const r = Math.max(2, Math.min(12, Math.floor(Math.min(w, h) / 2) - 2)), rc = Math.max(1, Math.floor(r / 2) - 1);
+    parts.push(`${cur}split=2[a${i}][b${i}]`);
+    parts.push(`[b${i}]crop=${w}:${h}:${x}:${y},boxblur=luma_radius=${r}:luma_power=2:chroma_radius=${rc}:chroma_power=2[k${i}]`);
+    parts.push(`[a${i}][k${i}]overlay=${x}:${y}:enable='between(t+${off.toFixed(3)},${b.t0.toFixed(3)},${b.t1.toFixed(3)})'[o${i}]`);
+    cur = `[o${i}]`;
+  });
+  parts.push(`${cur}null[bl]`);
+  return parts.join(";");
+}
+
+const assFilterPath = (p: string) => p.replace(/\\/g, "/").replace(/:/g, "\\:").replace(/'/g, "\\'");
+const rel = (p: string) => p.replace(resolve(process.cwd()) + "\\", "").replace(/\\/g, "/");
+function clipPath(s: Segment) { return join(cfg.sourceDir, cfg.clips[s.clip]); }
+
+/* ── Chuẩn bị Manifest ────────────────────────────────────────────────────── */
+console.log(`Bắt đầu sinh TTS và phụ đề cho kịch bản độc lập (speed: ${cfg.voice.speed ?? 1.0})...`);
+const manifest: Manifest[] = [];
+for (const s of segs) {
+  const audio = await tts(s.text);
+  const audioSec = await getDurationSec(audio);
+  const srcLen = s.out - s.in;
+  // Nhịp chậm rãi hoặc tua theo cấu hình maxSpeed
+  const maxSpd = s.maxSpeed ?? MAX_SPEED;
+  const speed = Math.min(maxSpd, Math.max(1, srcLen / (audioSec + PAD_SEC)));
+  const durSec = Math.max(audioSec + PAD_SEC, srcLen / speed);
+  const tpadSec = Math.max(0, durSec - srcLen / speed);
+  const pos = s.subPos ?? "bottom";
+  const assFile = join(workDir, "ass", `${s.id}.ass`);
+  writeFileSync(assFile, buildAss(s.text, speechSpan(audio, audioSec), durSec, pos, s.callout), "utf8");
+  manifest.push({
+    id: s.id, clip: s.clip, in: s.in, out: s.out, speed: +speed.toFixed(2),
+    audioSec: +audioSec.toFixed(2), durSec: +durSec.toFixed(2), tpadSec: +tpadSec.toFixed(2),
+    subPos: pos, blur: !!s.blurModelLabel, text: s.text, audio, ass: assFile,
+    crop: s.crop, callout: s.callout
+  });
+}
+writeFileSync(join(workDir, only ? "manifest-partial.json" : "manifest.json"), JSON.stringify(manifest, null, 2), "utf8");
+console.log(`✓ TTS + phụ đề độc lập: ${manifest.length} đoạn, tổng ${manifest.reduce((a, m) => a + m.durSec, 0).toFixed(1)}s`);
+
+const gpu = await gpuEncodeAvailable();
+const venc = gpu ? ["-c:v", "h264_nvenc", "-preset", "p5", "-rc", "vbr", "-cq", "20", "-b:v", "0"] : ["-c:v", "libx264", "-preset", "medium", "-crf", "20"];
+
+/** Filter chain đảm bảo chuẩn 16:9 100%, không bao giờ bị bè ngang */
+function tailChain(m: Manifest, s: Segment, ptsOffset: number): string {
+  const f = [`[bl]setpts=PTS/${m.speed}`, `fps=${OUT_FPS}`];
+  if (s.crop) {
+    // Ép chuẩn 16:9 tuyệt đối cho vùng crop: w / h = 16 / 9
+    const cropW = Math.floor(s.crop.w / 2) * 2;
+    const cropH = Math.round(cropW * 9 / 16 / 2) * 2;
+    const cropX = Math.min(Math.max(0, Math.floor(s.crop.x / 2) * 2), SRC_W - cropW);
+    const cropY = Math.min(Math.max(0, Math.floor(s.crop.y / 2) * 2), SRC_H - cropH);
+    f.push(`crop=${cropW}:${cropH}:${cropX}:${cropY}`, `scale=${OUT_W}:${OUT_H}:flags=lanczos`);
+  } else {
+    f.push(`scale=${OUT_W}:${OUT_H}:flags=lanczos`);
+  }
+  if (m.tpadSec > 0 && ptsOffset === 0) f.push(`tpad=stop_mode=clone:stop_duration=${m.tpadSec.toFixed(3)}`);
+  if (ptsOffset > 0) f.push(`setpts=PTS+${ptsOffset.toFixed(3)}/TB`);
+  f.push(`subtitles=filename='${assFilterPath(rel(m.ass))}':fontsdir='${FONTS_DIR}'`, "format=yuv420p");
+  return f.join(",") + "[v]";
+}
+
+async function render(m: Manifest, s: Segment) {
+  const out = join(workDir, `${m.id}.mp4`);
+  const fc = `${blurChain(boxesFor(s), s.in, SRC_W, SRC_H)};${tailChain(m, s, 0)};[2:v]scale=84:-1,format=rgba,colorchannelmixer=aa=0.4[wm];[v][wm]overlay=W-w-44:44[vo]`;
+  await runMediaCommand("ffmpeg", [
+    "-y", "-hide_banner", "-loglevel", "error",
+    "-ss", String(s.in), "-t", String(s.out - s.in),
+    "-i", clipPath(s), "-i", m.audio, "-i", "assets/brand/watermark.png",
+    "-filter_complex", fc, "-map", "[vo]", "-map", "1:a",
+    "-af", `aresample=48000,apad=whole_dur=${m.durSec}`,
+    "-t", String(m.durSec), "-r", String(OUT_FPS),
+    ...venc, "-pix_fmt", "yuv420p", "-g", "30", "-bf", "0",
+    "-c:a", "aac", "-b:a", "192k", "-ac", "2", out
+  ]);
+  return out;
+}
+
+async function still(m: Manifest, s: Segment, tOut: number, out: string) {
+  const srcT = Math.min(s.out - 0.05, s.in + tOut * m.speed);
+  const fc = `${blurChain(boxesFor(s), srcT, SRC_W, SRC_H)};${tailChain(m, s, tOut)}`;
+  await runMediaCommand("ffmpeg", ["-y", "-hide_banner", "-loglevel", "error", "-ss", srcT.toFixed(3), "-i", clipPath(s), "-filter_complex", fc, "-map", "[v]", "-frames:v", "1", out]);
+}
+
+if (flag("stills")) {
+  const dir = opt("stills-dir") ?? join(docDir, "stills");
+  mkdirSync(dir, { recursive: true });
+  for (const m of manifest) {
+    const s = cfg.segments.find((x) => x.id === m.id)!;
+    await still(m, s, m.durSec / 2, join(dir, `${m.id}-mid.png`));
+    console.log(`Ảnh kiểm tra: ${m.id}`);
+  }
+}
+
+const renderIds = opt("render");
+if (renderIds) {
+  for (const m of manifest) {
+    if (renderIds !== "all" && !renderIds.split(",").includes(m.id)) continue;
+    const s = cfg.segments.find((x) => x.id === m.id)!;
+    const rendered = await render(m, s);
+    console.log(`Render: ${m.id} → ${basename(rendered)} (${m.durSec}s, speed ${m.speed}x)`);
+  }
+}
+
+/* ── Dựng phần Intro đồng bộ 100% TTS 48kHz stereo ───────────────────────── */
+async function buildIntro(): Promise<string> {
+  const introOut = join(docDir, "intro-clean.mp4");
+  const introScriptFile = join(docDir, "script.json");
+  if (!existsSync(introScriptFile)) {
+    throw new Error(`Không tìm thấy ${introScriptFile}`);
+  }
+  const introScript = JSON.parse(readFileSync(introScriptFile, "utf8"));
+  const introAudios: string[] = [];
+
+  console.log(`[Intro] Sinh TTS cho 4 cảnh intro với tốc độ ${cfg.voice.speed ?? 1.0}...`);
+  for (const scene of introScript.scenes) {
+    const text = scene.voiceText;
+    const spoken = applyNarrationReplacements(text);
+    const hash = createHash("sha1").update(`${client.cacheIdentity}|intro|speed${cfg.voice.speed ?? 1.0}|${spoken}`).digest("hex").slice(0, 16);
+    const aFile = join(workDir, "tts", `intro-${scene.id}-${hash}.mp3`);
+    if (!existsSync(aFile)) {
+      await client.generate(spoken, aFile);
+    }
+    introAudios.push(aFile);
+  }
+
+  // Ghép audio intro thành 1 file 48kHz stereo
+  const introAudioMerged = join(workDir, "intro-voice.m4a");
+  const fcAudio = introAudios.map((_, i) => `[${i}:a]aresample=48000,aformat=channel_layouts=stereo,apad=pad_dur=0.4[a${i}]`).join(";") + ";" +
+    introAudios.map((_, i) => `[a${i}]`).join("") + `concat=n=${introAudios.length}:v=0:a=1[ao]`;
+  await runMediaCommand("ffmpeg", [
+    "-y", "-hide_banner", "-loglevel", "error",
+    ...introAudios.flatMap((f) => ["-i", f]),
+    "-filter_complex", fcAudio, "-map", "[ao]",
+    "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
+    introAudioMerged
+  ]);
+  const introTotalDur = await getDurationSec(introAudioMerged);
+  console.log(`✓ Audio Intro hoàn tất: ${introTotalDur.toFixed(1)}s (48kHz stereo)`);
+
+  // Sử dụng video visual từ intro v1 nhưng thay thế toàn bộ track audio bằng audio 48kHz stereo mới
+  const existingIntro = join(dirname(docDir), "Hướng dẫn transcript", "video.mp4");
+  if (existsSync(existingIntro)) {
+    console.log(`[Intro] Muxing video intro với audio 48kHz stereo chuẩn...`);
+    await runMediaCommand("ffmpeg", [
+      "-y", "-hide_banner", "-loglevel", "error",
+      "-i", existingIntro, "-i", introAudioMerged,
+      "-map", "0:v:0", "-map", "1:a:0",
+      "-t", String(introTotalDur),
+      "-c:v", "copy",
+      "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
+      introOut
+    ]);
+    console.log(`✓ Video Intro chuẩn hoàn tất: ${introOut}`);
+  }
+  return introOut;
+}
+
+if (flag("concat")) {
+  const screencastMp4 = join(docDir, "video-screencast.mp4");
+  const list = manifest.map((m) => `file '${resolve(workDir, `${m.id}.mp4`).replace(/\\/g, "/")}'`).join("\n");
+  writeFileSync(join(workDir, "concat.txt"), list, "utf8");
+
+  console.log("Nối toàn bộ 18 đoạn screencast...");
+  await runMediaCommand("ffmpeg", [
+    "-y", "-hide_banner", "-loglevel", "error",
+    "-f", "concat", "-safe", "0",
+    "-i", join(workDir, "concat.txt"),
+    "-c", "copy", screencastMp4
+  ]);
+  console.log(`✓ Video Screencast hoàn tất: ${screencastMp4}`);
+
+  // Dựng Intro và ghép thành video tổng thể hoàn chỉnh
+  const introMp4 = await buildIntro();
+  const finalVideo = join(docDir, "Huong-dan-tu-dung-cong-cu-go-bang.mp4");
+
+  if (existsSync(introMp4) && existsSync(screencastMp4)) {
+    console.log("Nối Intro + Screencast thành video xuất xưởng hoàn chỉnh (re-encode mượt mà)...");
+    const fc = "[0:v]fps=30,scale=1920:1080,setsar=1[v0];[1:v]fps=30,scale=1920:1080,setsar=1[v1];[0:a]aformat=sample_rates=48000:channel_layouts=stereo[a0];[1:a]aformat=sample_rates=48000:channel_layouts=stereo[a1];[v0][a0][v1][a1]concat=n=2:v=1:a=1[vo][ao]";
+    await runMediaCommand("ffmpeg", [
+      "-y", "-hide_banner", "-loglevel", "error",
+      "-i", introMp4, "-i", screencastMp4,
+      "-filter_complex", fc,
+      "-map", "[vo]", "-map", "[ao]",
+      ...venc, "-pix_fmt", "yuv420p",
+      "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
+      finalVideo
+    ]);
+    console.log(`\n🎉 HOÀN TẤT XUẤT XƯỞNG BẢN DỰNG RIÊNG: ${finalVideo}`);
+  }
+}

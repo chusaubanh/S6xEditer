@@ -1,0 +1,141 @@
+{
+  "brand": "S6xEditer",
+  "logo": "./logo.png",
+  "watermark": "./watermark.png",
+  "identity": {
+    "channel": "Công ty Mẫu",
+    "shortName": "S6X",
+    "url": "example.com",
+    "tagline": "",
+    "retiredTaglines": [],
+    "outroCta": ""
+  },
+  "narration": {
+    "replacements": {
+      "VS Code": "vi ét cốt",
+      "Haiku": "Hai cu",
+      "Sonnet": "Sô nét",
+      "OKRs": "ô ca rờ ét",
+      "KR": "ca rờ",
+      "Facebook Ads": "Facebook át",
+      "Campaign": "cam pên",
+      "Ad Set": "át xét",
+      "Ad": "át",
+      "Ads Manager": "át ma ni giơ",
+      "Business Manager": "bít nít ma ni giơ",
+      "Events Manager": "i ven ma ni giơ",
+      "Pixel": "pích xeo",
+      "Meta": "mê ta",
+      "D2C": "đi tu xi",
+      "Traffic": "tráp phích",
+      "ROAS": "rô át",
+      "CPM": "xi pi em",
+      "CTR": "xi ti a",
+      "CPA": "xi pi ây",
+      "CPC": "xi pi xi",
+      "CVR": "xi vi a",
+      "CTA": "xi ti ây",
+      "BU": "bi iu",
+      "Media Buyer": "mi đi a bai ơ",
+      "Media Creator": "mi đi a cri ây tơ",
+      "Dataset": "đa ta sét"
+    }
+  },
+  "palette": {
+    "ink": "#0C0C0C",
+    "surface": "#141517",
+    "elevated": "#1E1F23",
+    "hover": "#26282D",
+    "accent": "#C5A059",
+    "accentLight": "#E0C286",
+    "text": "#EDEDED",
+    "textSecondary": "#8A8D93",
+    "textMuted": "#5E6065",
+    "border": "rgba(255, 255, 255, 0.08)",
+    "focusBorder": "rgba(255, 255, 255, 0.15)"
+  },
+  "semantic": {
+    "success": "#22C55E",
+    "warning": "#F59E0B",
+    "danger": "#EF4444",
+    "info": "#60A5FA"
+  },
+  "personas": {
+    "noi_bo": {
+      "label": "Nội bộ · văn hóa & quy định",
+      "docTypes": [
+        "văn hóa",
+        "nội quy",
+        "quy trình nội bộ",
+        "chuẩn mực"
+      ],
+      "addressing": "chúng tôi",
+      "defaultVoiceStyle": "tin_tuc",
+      "voiceGuide": [
+        "S6x tự kể về mình: trang trọng nhưng ấm, không rao giảng.",
+        "Đánh số mạch kể khi tài liệu có danh sách nét/mục (nét thứ nhất, nét thứ hai...).",
+        "Mỗi scene một ý trọn vẹn, kết thúc dứt khoát, không bỏ lửng.",
+        "Không hô khẩu hiệu rỗng; luôn gắn với hành vi cụ thể trong tài liệu."
+      ],
+      "hookGuide": "Mở bằng một khẳng định bản sắc hoặc câu phủ định gây chú ý (ví dụ: 'Văn hóa không nằm trên giấy tờ.'). Nêu rõ video sẽ đi qua bao nhiêu phần.",
+      "ctaGuide": "Outro hướng nội: mời đồng hành, xây dựng cùng đội ngũ. Không kêu gọi mua hàng."
+    },
+    "tin_tuc": {
+      "label": "Tin tức · bản tin ngành",
+      "docTypes": [
+        "tin tức",
+        "bài báo",
+        "báo cáo thị trường",
+        "sự kiện"
+      ],
+      "addressing": "trung lập, dẫn chuyện",
+      "defaultVoiceStyle": "tin_tuc",
+      "voiceGuide": [
+        "Dẫn tin khách quan, câu ngắn, nhịp nhanh, thông tin đắt lên trước.",
+        "Số liệu là xương sống: đọc số thành chữ tự nhiên, hiển thị số ở dạng gốc.",
+        "Mỗi scene trả lời một câu hỏi: chuyện gì, vì sao, ảnh hưởng ai, tiếp theo là gì.",
+        "Không thêm bình luận cá nhân ngoài dữ kiện trong tài liệu."
+      ],
+      "hookGuide": "Mở bằng dữ kiện mạnh nhất hoặc con số gây sốc THẬT có trong tài liệu. Không giật tít quá nội dung.",
+      "ctaGuide": "Outro mời theo dõi kênh để cập nhật bản tin tiếp theo."
+    },
+    "marketing": {
+      "label": "Marketing · sản phẩm & tuyển dụng",
+      "docTypes": [
+        "giới thiệu dịch vụ",
+        "sản phẩm",
+        "tuyển dụng",
+        "sự kiện thương hiệu"
+      ],
+      "addressing": "bạn",
+      "defaultVoiceStyle": "tu_nhien",
+      "voiceGuide": [
+        "Nói thẳng với người xem ('bạn'), đặt câu hỏi kéo họ vào vấn đề của chính họ.",
+        "Lợi ích trước, tính năng sau; mỗi scene một lợi ích.",
+        "Giọng tự tin, gần gũi, không phóng đại quá cam kết trong tài liệu.",
+        "Kết mỗi ý bằng hình ảnh cụ thể người xem tưởng tượng được."
+      ],
+      "hookGuide": "Mở bằng câu hỏi trúng nỗi đau hoặc mong muốn của người xem, trả lời ngay trong ba giây tiếp theo.",
+      "ctaGuide": "Outro CTA hành động rõ: liên hệ, ứng tuyển, tìm hiểu tại example.com."
+    },
+    "dao_tao": {
+      "label": "Đào tạo · hướng dẫn từng bước",
+      "docTypes": [
+        "hướng dẫn",
+        "đào tạo",
+        "quy trình thao tác",
+        "onboarding"
+      ],
+      "addressing": "bạn",
+      "defaultVoiceStyle": "tu_nhien",
+      "voiceGuide": [
+        "Người hướng dẫn kiên nhẫn: rõ ràng, tuần tự, không bỏ bước.",
+        "Mạch 'bước một → bước hai' hiển thị và đọc đều phải khớp thứ tự tài liệu.",
+        "Mỗi scene một bước hoặc một nguyên tắc; nêu lỗi thường gặp nếu tài liệu có.",
+        "Câu ngắn, động từ mở đầu, tránh thuật ngữ không có trong tài liệu."
+      ],
+      "hookGuide": "Mở bằng kết quả người học đạt được sau video, rồi nêu số bước sẽ đi qua.",
+      "ctaGuide": "Outro tóm tắt một câu + mời xem phần tiếp theo của chuỗi."
+    }
+  }
+}

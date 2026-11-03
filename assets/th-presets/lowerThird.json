@@ -1,0 +1,755 @@
+{
+  "type": "lowerThird",
+  "presets": [
+    {
+      "id": "lt-glass",
+      "name": "Kính mờ",
+      "variants": [
+        {
+          "id": "gold",
+          "name": "Nhấn vàng",
+          "style": {
+            "fontFamily": "Be Vietnam Pro",
+            "fontSize": 44,
+            "fontWeight": 700,
+            "color": "#EDEDED",
+            "accentColor": "#C5A059",
+            "background": "rgba(24,25,29,0.9)",
+            "align": "left",
+            "radius": 24,
+            "padding": 28,
+            "strokeColor": "rgba(255,255,255,0.15)",
+            "strokeWidth": 2,
+            "shadow": true
+          },
+          "animation": {
+            "in": {
+              "kind": "left",
+              "dur": 0.5
+            },
+            "out": {
+              "kind": "fade",
+              "dur": 0.3
+            }
+          },
+          "sfx": {
+            "in": "whoosh-soft",
+            "out": null
+          },
+          "layout": {
+            "16:9": {
+              "x": 5,
+              "y": 74,
+              "w": 40,
+              "h": 14,
+              "fontSize": 37
+            },
+            "4:5": {
+              "x": 6,
+              "y": 72,
+              "w": 80,
+              "h": 12,
+              "fontSize": 44
+            }
+          }
+        },
+        {
+          "id": "dark",
+          "name": "Kính tối",
+          "style": {
+            "fontFamily": "Be Vietnam Pro",
+            "fontSize": 44,
+            "fontWeight": 700,
+            "color": "#EDEDED",
+            "accentColor": "#C5A059",
+            "background": "rgba(12,12,12,0.92)",
+            "align": "left",
+            "radius": 24,
+            "padding": 28,
+            "strokeColor": "rgba(255,255,255,0.15)",
+            "strokeWidth": 2,
+            "shadow": true
+          },
+          "animation": {
+            "in": {
+              "kind": "soft",
+              "dur": 0.5
+            },
+            "out": {
+              "kind": "fade",
+              "dur": 0.3
+            }
+          },
+          "sfx": {
+            "in": "slide",
+            "out": null
+          },
+          "layout": {
+            "16:9": {
+              "x": 5,
+              "y": 74,
+              "w": 40,
+              "h": 14,
+              "fontSize": 37
+            },
+            "4:5": {
+              "x": 6,
+              "y": 72,
+              "w": 80,
+              "h": 12,
+              "fontSize": 44
+            }
+          }
+        },
+        {
+          "id": "rise",
+          "name": "Trồi lên",
+          "style": {
+            "fontFamily": "Be Vietnam Pro",
+            "fontSize": 44,
+            "fontWeight": 700,
+            "color": "#EDEDED",
+            "accentColor": "#C5A059",
+            "background": "rgba(24,25,29,0.9)",
+            "align": "left",
+            "radius": 24,
+            "padding": 28,
+            "strokeColor": "rgba(255,255,255,0.15)",
+            "strokeWidth": 2,
+            "shadow": true
+          },
+          "animation": {
+            "in": {
+              "kind": "rise",
+              "dur": 0.5
+            },
+            "out": {
+              "kind": "down",
+              "dur": 0.3
+            }
+          },
+          "sfx": {
+            "in": "whoosh-soft",
+            "out": "slide"
+          },
+          "layout": {
+            "16:9": {
+              "x": 5,
+              "y": 74,
+              "w": 40,
+              "h": 14,
+              "fontSize": 37
+            },
+            "4:5": {
+              "x": 6,
+              "y": 72,
+              "w": 80,
+              "h": 12,
+              "fontSize": 44
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "lt-gold-bar",
+      "name": "Thanh vàng",
+      "variants": [
+        {
+          "id": "bar",
+          "name": "Viền vàng",
+          "style": {
+            "fontFamily": "Be Vietnam Pro",
+            "fontSize": 44,
+            "fontWeight": 800,
+            "color": "#EDEDED",
+            "accentColor": "#C5A059",
+            "background": "rgba(12,12,12,0.85)",
+            "align": "left",
+            "radius": 4,
+            "padding": 26,
+            "strokeColor": "#C5A059",
+            "strokeWidth": 4,
+            "shadow": true
+          },
+          "animation": {
+            "in": {
+              "kind": "left",
+              "dur": 0.45
+            },
+            "out": {
+              "kind": "fade",
+              "dur": 0.3
+            }
+          },
+          "sfx": {
+            "in": "whoosh-soft",
+            "out": null
+          },
+          "layout": {
+            "16:9": {
+              "x": 5,
+              "y": 74,
+              "w": 40,
+              "h": 14,
+              "fontSize": 37
+            },
+            "4:5": {
+              "x": 6,
+              "y": 72,
+              "w": 80,
+              "h": 12,
+              "fontSize": 44
+            }
+          }
+        },
+        {
+          "id": "solid",
+          "name": "Nền vàng",
+          "style": {
+            "fontFamily": "Be Vietnam Pro",
+            "fontSize": 44,
+            "fontWeight": 800,
+            "color": "#0C0C0C",
+            "accentColor": "#0C0C0C",
+            "background": "#C5A059",
+            "align": "left",
+            "radius": 4,
+            "padding": 26,
+            "strokeColor": null,
+            "strokeWidth": 0,
+            "shadow": false
+          },
+          "animation": {
+            "in": {
+              "kind": "left",
+              "dur": 0.45
+            },
+            "out": {
+              "kind": "fade",
+              "dur": 0.3
+            }
+          },
+          "sfx": {
+            "in": "whoosh-soft",
+            "out": null
+          },
+          "layout": {
+            "16:9": {
+              "x": 5,
+              "y": 74,
+              "w": 40,
+              "h": 14,
+              "fontSize": 37
+            },
+            "4:5": {
+              "x": 6,
+              "y": 72,
+              "w": 80,
+              "h": 12,
+              "fontSize": 44
+            }
+          }
+        },
+        {
+          "id": "right",
+          "name": "Từ phải",
+          "style": {
+            "fontFamily": "Be Vietnam Pro",
+            "fontSize": 44,
+            "fontWeight": 800,
+            "color": "#EDEDED",
+            "accentColor": "#C5A059",
+            "background": "rgba(12,12,12,0.85)",
+            "align": "left",
+            "radius": 4,
+            "padding": 26,
+            "strokeColor": "#C5A059",
+            "strokeWidth": 4,
+            "shadow": true
+          },
+          "animation": {
+            "in": {
+              "kind": "right",
+              "dur": 0.45
+            },
+            "out": {
+              "kind": "fade",
+              "dur": 0.3
+            }
+          },
+          "sfx": {
+            "in": "whoosh-soft",
+            "out": "slide"
+          },
+          "layout": {
+            "16:9": {
+              "x": 5,
+              "y": 74,
+              "w": 40,
+              "h": 14,
+              "fontSize": 37
+            },
+            "4:5": {
+              "x": 6,
+              "y": 72,
+              "w": 80,
+              "h": 12,
+              "fontSize": 44
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "lt-underline",
+      "name": "Tối giản gạch chân",
+      "variants": [
+        {
+          "id": "gold",
+          "name": "Gạch vàng",
+          "style": {
+            "fontFamily": "Lexend",
+            "fontSize": 42,
+            "fontWeight": 600,
+            "color": "#EDEDED",
+            "accentColor": "#C5A059",
+            "background": "rgba(0,0,0,0)",
+            "align": "left",
+            "radius": 0,
+            "padding": 12,
+            "strokeColor": "#0C0C0C",
+            "strokeWidth": 4,
+            "shadow": true
+          },
+          "animation": {
+            "in": {
+              "kind": "soft",
+              "dur": 0.5
+            },
+            "out": {
+              "kind": "fade",
+              "dur": 0.3
+            }
+          },
+          "sfx": {
+            "in": "tap",
+            "out": null
+          },
+          "layout": {
+            "16:9": {
+              "x": 5,
+              "y": 74,
+              "w": 40,
+              "h": 14,
+              "fontSize": 36
+            },
+            "4:5": {
+              "x": 6,
+              "y": 72,
+              "w": 80,
+              "h": 12,
+              "fontSize": 42
+            }
+          }
+        },
+        {
+          "id": "white",
+          "name": "Gạch trắng",
+          "style": {
+            "fontFamily": "Lexend",
+            "fontSize": 42,
+            "fontWeight": 600,
+            "color": "#EDEDED",
+            "accentColor": "#EDEDED",
+            "background": "rgba(0,0,0,0)",
+            "align": "left",
+            "radius": 0,
+            "padding": 12,
+            "strokeColor": "#0C0C0C",
+            "strokeWidth": 4,
+            "shadow": true
+          },
+          "animation": {
+            "in": {
+              "kind": "fade",
+              "dur": 0.4
+            },
+            "out": {
+              "kind": "fade",
+              "dur": 0.3
+            }
+          },
+          "sfx": {
+            "in": "tap",
+            "out": null
+          },
+          "layout": {
+            "16:9": {
+              "x": 5,
+              "y": 74,
+              "w": 40,
+              "h": 14,
+              "fontSize": 36
+            },
+            "4:5": {
+              "x": 6,
+              "y": 72,
+              "w": 80,
+              "h": 12,
+              "fontSize": 42
+            }
+          }
+        },
+        {
+          "id": "rise",
+          "name": "Trồi nhẹ",
+          "style": {
+            "fontFamily": "Lexend",
+            "fontSize": 42,
+            "fontWeight": 600,
+            "color": "#EDEDED",
+            "accentColor": "#C5A059",
+            "background": "rgba(0,0,0,0)",
+            "align": "left",
+            "radius": 0,
+            "padding": 12,
+            "strokeColor": "#0C0C0C",
+            "strokeWidth": 4,
+            "shadow": true
+          },
+          "animation": {
+            "in": {
+              "kind": "rise",
+              "dur": 0.45
+            },
+            "out": {
+              "kind": "up",
+              "dur": 0.3
+            }
+          },
+          "sfx": {
+            "in": "whoosh-soft",
+            "out": null
+          },
+          "layout": {
+            "16:9": {
+              "x": 5,
+              "y": 74,
+              "w": 40,
+              "h": 14,
+              "fontSize": 36
+            },
+            "4:5": {
+              "x": 6,
+              "y": 72,
+              "w": 80,
+              "h": 12,
+              "fontSize": 42
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "lt-card",
+      "name": "Thẻ bo tròn",
+      "variants": [
+        {
+          "id": "dark",
+          "name": "Thẻ tối",
+          "style": {
+            "fontFamily": "Nunito",
+            "fontSize": 44,
+            "fontWeight": 800,
+            "color": "#EDEDED",
+            "accentColor": "#C5A059",
+            "background": "rgba(20,21,23,0.92)",
+            "align": "left",
+            "radius": 36,
+            "padding": 30,
+            "strokeColor": null,
+            "strokeWidth": 0,
+            "shadow": true
+          },
+          "animation": {
+            "in": {
+              "kind": "pop",
+              "dur": 0.45
+            },
+            "out": {
+              "kind": "fade",
+              "dur": 0.3
+            }
+          },
+          "sfx": {
+            "in": "pop-bubble",
+            "out": null
+          },
+          "layout": {
+            "16:9": {
+              "x": 5,
+              "y": 74,
+              "w": 40,
+              "h": 14,
+              "fontSize": 37
+            },
+            "4:5": {
+              "x": 6,
+              "y": 72,
+              "w": 80,
+              "h": 12,
+              "fontSize": 44
+            }
+          }
+        },
+        {
+          "id": "gold",
+          "name": "Thẻ vàng",
+          "style": {
+            "fontFamily": "Nunito",
+            "fontSize": 44,
+            "fontWeight": 800,
+            "color": "#0C0C0C",
+            "accentColor": "#0C0C0C",
+            "background": "#C5A059",
+            "align": "left",
+            "radius": 36,
+            "padding": 30,
+            "strokeColor": null,
+            "strokeWidth": 0,
+            "shadow": true
+          },
+          "animation": {
+            "in": {
+              "kind": "bounce",
+              "dur": 0.5
+            },
+            "out": {
+              "kind": "fade",
+              "dur": 0.3
+            }
+          },
+          "sfx": {
+            "in": "pop",
+            "out": "tap"
+          },
+          "layout": {
+            "16:9": {
+              "x": 5,
+              "y": 74,
+              "w": 40,
+              "h": 14,
+              "fontSize": 37
+            },
+            "4:5": {
+              "x": 6,
+              "y": 72,
+              "w": 80,
+              "h": 12,
+              "fontSize": 44
+            }
+          }
+        },
+        {
+          "id": "light",
+          "name": "Thẻ sáng",
+          "style": {
+            "fontFamily": "Nunito",
+            "fontSize": 44,
+            "fontWeight": 800,
+            "color": "#0C0C0C",
+            "accentColor": "#6B4E14",
+            "background": "rgba(237,237,237,0.95)",
+            "align": "left",
+            "radius": 36,
+            "padding": 30,
+            "strokeColor": null,
+            "strokeWidth": 0,
+            "shadow": true
+          },
+          "animation": {
+            "in": {
+              "kind": "zoom",
+              "dur": 0.45
+            },
+            "out": {
+              "kind": "fade",
+              "dur": 0.3
+            }
+          },
+          "sfx": {
+            "in": "ding",
+            "out": null
+          },
+          "layout": {
+            "16:9": {
+              "x": 5,
+              "y": 74,
+              "w": 40,
+              "h": 14,
+              "fontSize": 37
+            },
+            "4:5": {
+              "x": 6,
+              "y": 72,
+              "w": 80,
+              "h": 12,
+              "fontSize": 44
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "lt-news",
+      "name": "Tin tức",
+      "variants": [
+        {
+          "id": "classic",
+          "name": "Cổ điển",
+          "style": {
+            "fontFamily": "Be Vietnam Pro",
+            "fontSize": 46,
+            "fontWeight": 800,
+            "color": "#EDEDED",
+            "accentColor": "#C5A059",
+            "background": "rgba(12,12,12,0.9)",
+            "align": "left",
+            "radius": 0,
+            "padding": 24,
+            "strokeColor": "#C5A059",
+            "strokeWidth": 3,
+            "shadow": true
+          },
+          "animation": {
+            "in": {
+              "kind": "left",
+              "dur": 0.4
+            },
+            "out": {
+              "kind": "fade",
+              "dur": 0.3
+            }
+          },
+          "sfx": {
+            "in": "swoosh-up",
+            "out": null
+          },
+          "layout": {
+            "16:9": {
+              "x": 5,
+              "y": 74,
+              "w": 40,
+              "h": 14,
+              "fontSize": 39
+            },
+            "4:5": {
+              "x": 6,
+              "y": 72,
+              "w": 80,
+              "h": 12,
+              "fontSize": 46
+            }
+          }
+        },
+        {
+          "id": "flash",
+          "name": "Nhanh",
+          "style": {
+            "fontFamily": "Be Vietnam Pro",
+            "fontSize": 46,
+            "fontWeight": 800,
+            "color": "#EDEDED",
+            "accentColor": "#C5A059",
+            "background": "rgba(12,12,12,0.9)",
+            "align": "left",
+            "radius": 0,
+            "padding": 24,
+            "strokeColor": "#C5A059",
+            "strokeWidth": 3,
+            "shadow": true
+          },
+          "animation": {
+            "in": {
+              "kind": "stamp",
+              "dur": 0.35
+            },
+            "out": {
+              "kind": "fade",
+              "dur": 0.3
+            }
+          },
+          "sfx": {
+            "in": "stamp",
+            "out": null
+          },
+          "layout": {
+            "16:9": {
+              "x": 5,
+              "y": 74,
+              "w": 40,
+              "h": 14,
+              "fontSize": 39
+            },
+            "4:5": {
+              "x": 6,
+              "y": 72,
+              "w": 80,
+              "h": 12,
+              "fontSize": 46
+            }
+          }
+        },
+        {
+          "id": "clean",
+          "name": "Gọn",
+          "style": {
+            "fontFamily": "Be Vietnam Pro",
+            "fontSize": 46,
+            "fontWeight": 800,
+            "color": "#EDEDED",
+            "accentColor": "#C5A059",
+            "background": "rgba(12,12,12,0.9)",
+            "align": "left",
+            "radius": 0,
+            "padding": 24,
+            "strokeColor": "#C5A059",
+            "strokeWidth": 0,
+            "shadow": true
+          },
+          "animation": {
+            "in": {
+              "kind": "drop",
+              "dur": 0.4
+            },
+            "out": {
+              "kind": "up",
+              "dur": 0.25
+            }
+          },
+          "sfx": {
+            "in": "whoosh-fast",
+            "out": "swoosh-up"
+          },
+          "layout": {
+            "16:9": {
+              "x": 5,
+              "y": 74,
+              "w": 40,
+              "h": 14,
+              "fontSize": 39
+            },
+            "4:5": {
+              "x": 6,
+              "y": 72,
+              "w": 80,
+              "h": 12,
+              "fontSize": 46
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

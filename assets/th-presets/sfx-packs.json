@@ -1,0 +1,265 @@
+{
+  "type": "sfxPacks",
+  "packs": [
+    {
+      "id": "corporate",
+      "name": "Doanh nghiệp sang trọng",
+      "description": "Chuông, tiếng gõ nhẹ, chuyển động mượt; không meme.",
+      "prefer": "kenney",
+      "in": {
+        "rise": {
+          "category": "whoosh-soft",
+          "gainDb": -15
+        },
+        "drop": {
+          "category": "whoosh-soft",
+          "gainDb": -15
+        },
+        "left": {
+          "category": "slide",
+          "gainDb": -15
+        },
+        "right": {
+          "category": "slide",
+          "gainDb": -15
+        },
+        "pop": {
+          "category": "ding",
+          "gainDb": -15
+        },
+        "bounce": {
+          "category": "chime",
+          "gainDb": -15
+        },
+        "zoom": {
+          "category": "transition-sweep",
+          "gainDb": -16
+        },
+        "soft": {
+          "category": "tap",
+          "gainDb": -15
+        },
+        "stamp": {
+          "category": "impact-soft",
+          "gainDb": -12
+        },
+        "fade": null
+      },
+      "out": {
+        "fade": null,
+        "shrink": null,
+        "up": null,
+        "down": null
+      },
+      "emphasis": {
+        "category": "tick",
+        "gainDb": -26
+      },
+      "intro": {
+        "category": "whoosh-long-electro",
+        "gainDb": -10
+      }
+    },
+    {
+      "id": "minimal",
+      "name": "Tối giản",
+      "description": "Nhẹ, ít, tinh tế; hợp nội dung nghiêm túc.",
+      "prefer": "kenney",
+      "in": {
+        "rise": {
+          "category": "whoosh-soft",
+          "gainDb": -14
+        },
+        "drop": {
+          "category": "whoosh-soft",
+          "gainDb": -14
+        },
+        "left": {
+          "category": "slide",
+          "gainDb": -14
+        },
+        "right": {
+          "category": "slide",
+          "gainDb": -14
+        },
+        "pop": {
+          "category": "pop-bubble",
+          "gainDb": -13
+        },
+        "bounce": {
+          "category": "pop-bubble",
+          "gainDb": -12
+        },
+        "zoom": {
+          "category": "whoosh-soft",
+          "gainDb": -14
+        },
+        "soft": {
+          "category": "tap",
+          "gainDb": -14
+        },
+        "stamp": {
+          "category": "tap",
+          "gainDb": -10
+        },
+        "fade": null
+      },
+      "out": {
+        "fade": null,
+        "shrink": null,
+        "up": {
+          "category": "slide",
+          "gainDb": -18
+        },
+        "down": {
+          "category": "slide",
+          "gainDb": -18
+        }
+      },
+      "emphasis": {
+        "category": "tick",
+        "gainDb": -24
+      },
+      "intro": {
+        "category": "whoosh-long-electro",
+        "gainDb": -10
+      }
+    },
+    {
+      "id": "social",
+      "name": "Năng động mạng xã hội",
+      "description": "Nhanh, nhiều điểm nhấn: whoosh nhanh, pop, impact.",
+      "prefer": "synth",
+      "in": {
+        "rise": {
+          "category": "whoosh-fast",
+          "gainDb": -10
+        },
+        "drop": {
+          "category": "swoosh-down",
+          "gainDb": -10
+        },
+        "left": {
+          "category": "whoosh-fast",
+          "gainDb": -10
+        },
+        "right": {
+          "category": "whoosh-fast",
+          "gainDb": -10
+        },
+        "pop": {
+          "category": "pop",
+          "gainDb": -9
+        },
+        "bounce": {
+          "category": "pop",
+          "gainDb": -8
+        },
+        "zoom": {
+          "category": "swoosh-up",
+          "gainDb": -10
+        },
+        "soft": {
+          "category": "whoosh-soft",
+          "gainDb": -13
+        },
+        "stamp": {
+          "category": "stamp",
+          "gainDb": -8
+        },
+        "fade": null
+      },
+      "out": {
+        "fade": null,
+        "shrink": {
+          "category": "pop-bubble",
+          "gainDb": -14
+        },
+        "up": {
+          "category": "swoosh-up",
+          "gainDb": -15
+        },
+        "down": {
+          "category": "swoosh-down",
+          "gainDb": -15
+        }
+      },
+      "emphasis": {
+        "category": "tick",
+        "gainDb": -20
+      },
+      "intro": {
+        "category": "whoosh-long-electro",
+        "gainDb": -10
+      }
+    },
+    {
+      "id": "tech",
+      "name": "Công nghệ",
+      "description": "Click số, glitch, gõ phím, thông báo.",
+      "prefer": "synth",
+      "in": {
+        "rise": {
+          "category": "slide",
+          "gainDb": -11
+        },
+        "drop": {
+          "category": "glitch",
+          "gainDb": -12
+        },
+        "left": {
+          "category": "slide",
+          "gainDb": -11
+        },
+        "right": {
+          "category": "slide",
+          "gainDb": -11
+        },
+        "pop": {
+          "category": "click-ui",
+          "gainDb": -9
+        },
+        "bounce": {
+          "category": "notification",
+          "gainDb": -12
+        },
+        "zoom": {
+          "category": "transition-sweep",
+          "gainDb": -12
+        },
+        "soft": {
+          "category": "click-ui",
+          "gainDb": -12
+        },
+        "stamp": {
+          "category": "glitch",
+          "gainDb": -10
+        },
+        "fade": null
+      },
+      "out": {
+        "fade": null,
+        "shrink": {
+          "category": "click-ui",
+          "gainDb": -16
+        },
+        "up": {
+          "category": "tick",
+          "gainDb": -16
+        },
+        "down": {
+          "category": "tick",
+          "gainDb": -16
+        }
+      },
+      "emphasis": {
+        "category": "typing",
+        "gainDb": -22
+      },
+      "intro": {
+        "category": "whoosh-long-electro",
+        "gainDb": -10
+      }
+    }
+  ]
+}

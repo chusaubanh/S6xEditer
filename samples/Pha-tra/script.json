@@ -1,0 +1,26 @@
+{
+  "version": "4.0",
+  "documentName": "Pha-tra",
+  "title": "Pha một tách trà",
+  "aspect": "4:5",
+  "voice": { "id": "Hải Đăng", "tone": "tu_nhien" },
+  "targetAudience": "Người mới dùng pipeline",
+  "analysis": {
+    "contentGroups": [{ "title": "Các bước pha trà", "contentType": "danh-sach", "learnerNeeds": "Làm theo được", "mustKeep": ["ba phút"], "canDrop": [], "examples": [], "delivery": "Từng bước" }],
+    "learningLogic": "Theo thứ tự thao tác",
+    "principles": ["Mỗi câu một thao tác"],
+    "fitsOneVideo": true
+  },
+  "lengthDecision": { "status": "single", "confirmedBy": "mẫu" },
+  "scenes": [
+    {
+      "id": "cac-buoc",
+      "section": "Các bước",
+      "contentType": "danh-sach",
+      "component": "mau/cac-buoc",
+      "voiceSegments": ["Đun sôi nước rồi cho một thìa trà vào ấm.", "Rót nước vào ấm và chờ ba phút.", "Cuối cùng rót trà ra tách."],
+      "visual": ["Khối đầu tiên hiện ra.", "Khối thứ hai hiện ra.", "Khối thứ ba hiện ra."],
+      "labels": ["Đun sôi nước", "Chờ ba phút", "Rót trà ra tách"]
+    }
+  ]
+}
