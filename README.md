@@ -76,7 +76,7 @@ Chế độ C cài thêm bằng `npm run th:setup`.
 
 ### Làm video đầu tiên
 
-Repo có sẵn một video mẫu về cách pha trà. Mở một cửa sổ PowerShell và bật máy chủ giọng đọc:
+Repo có sẵn một kịch bản mẫu về cách pha trà. Mở một cửa sổ PowerShell và bật máy chủ giọng đọc:
 
 ```powershell
 npm run tts:server
@@ -144,7 +144,6 @@ npm run gate:determinism -- --fixtures
 - Đường chạy CPU mới được thử bằng cách ép CPU trên máy có NVIDIA, chưa thử trên máy thật không có NVIDIA.
 - Cài Chế độ C từ đầu trên máy mới, gồm việc tự tải model, chưa được kiểm thử.
 - Luồng quay màn hình và gói Premiere trong `scripts/screencast/` chưa được kiểm thử đầu cuối, và có thể cần sửa.
-- Project dùng lớp cảnh `templateId` kiểu cũ sẽ không hiển thị lớp đó.
 
 ## Tài liệu
 
